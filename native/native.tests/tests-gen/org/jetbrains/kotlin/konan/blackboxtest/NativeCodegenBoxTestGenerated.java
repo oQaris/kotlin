@@ -22010,6 +22010,12 @@ public class NativeCodegenBoxTestGenerated extends AbstractNativeCodegenBoxTest 
                 }
 
                 @Test
+                @TestMetadata("abstractMethodDefault.kt")
+                public void testAbstractMethodDefault() throws Exception {
+                    runTest("compiler/testData/codegen/box/inlineClasses/sealed/abstractMethodDefault.kt");
+                }
+
+                @Test
                 @TestMetadata("abstractMethodNoOverrideDeepNonInline.kt")
                 public void testAbstractMethodNoOverrideDeepNonInline() throws Exception {
                     runTest("compiler/testData/codegen/box/inlineClasses/sealed/abstractMethodNoOverrideDeepNonInline.kt");
@@ -22034,9 +22040,9 @@ public class NativeCodegenBoxTestGenerated extends AbstractNativeCodegenBoxTest 
                 }
 
                 @Test
-                @TestMetadata("abstractMethodNoOverrideInNonInline.kt")
-                public void testAbstractMethodNoOverrideInNonInline() throws Exception {
-                    runTest("compiler/testData/codegen/box/inlineClasses/sealed/abstractMethodNoOverrideInNonInline.kt");
+                @TestMetadata("abstractMethodParam.kt")
+                public void testAbstractMethodParam() throws Exception {
+                    runTest("compiler/testData/codegen/box/inlineClasses/sealed/abstractMethodParam.kt");
                 }
 
                 @Test
@@ -22067,12 +22073,6 @@ public class NativeCodegenBoxTestGenerated extends AbstractNativeCodegenBoxTest 
                 @TestMetadata("abstractValNoOverrideDeepNonInline4.kt")
                 public void testAbstractValNoOverrideDeepNonInline4() throws Exception {
                     runTest("compiler/testData/codegen/box/inlineClasses/sealed/abstractValNoOverrideDeepNonInline4.kt");
-                }
-
-                @Test
-                @TestMetadata("abstractValNoOverrideInNonInline.kt")
-                public void testAbstractValNoOverrideInNonInline() throws Exception {
-                    runTest("compiler/testData/codegen/box/inlineClasses/sealed/abstractValNoOverrideInNonInline.kt");
                 }
 
                 @Test
