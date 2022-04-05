@@ -16865,6 +16865,54 @@ public class IrCodegenBoxWasmTestGenerated extends AbstractIrCodegenBoxWasmTest 
                 }
             }
 
+            @TestMetadata("compiler/testData/codegen/box/inlineClasses/sealed/methods")
+            @TestDataPath("$PROJECT_ROOT")
+            @RunWith(JUnit3RunnerWithInners.class)
+            public static class Methods extends AbstractIrCodegenBoxWasmTest {
+                private void runTest(String testDataFilePath) throws Exception {
+                    KotlinTestUtils.runTest0(this::doTest, TargetBackend.WASM, testDataFilePath);
+                }
+
+                public void testAllFilesPresentInMethods() throws Exception {
+                    KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/box/inlineClasses/sealed/methods"), Pattern.compile("^([^_](.+))\\.kt$"), null, TargetBackend.WASM, true);
+                }
+
+                @TestMetadata("compiler/testData/codegen/box/inlineClasses/sealed/methods/string")
+                @TestDataPath("$PROJECT_ROOT")
+                @RunWith(JUnit3RunnerWithInners.class)
+                public static class String extends AbstractIrCodegenBoxWasmTest {
+                    private void runTest(String testDataFilePath) throws Exception {
+                        KotlinTestUtils.runTest0(this::doTest, TargetBackend.WASM, testDataFilePath);
+                    }
+
+                    public void testAllFilesPresentInString() throws Exception {
+                        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/box/inlineClasses/sealed/methods/string"), Pattern.compile("^([^_](.+))\\.kt$"), null, TargetBackend.WASM, true);
+                    }
+
+                    @TestMetadata("compiler/testData/codegen/box/inlineClasses/sealed/methods/string/toString")
+                    @TestDataPath("$PROJECT_ROOT")
+                    @RunWith(JUnit3RunnerWithInners.class)
+                    public static class ToString extends AbstractIrCodegenBoxWasmTest {
+                        private void runTest(String testDataFilePath) throws Exception {
+                            KotlinTestUtils.runTest0(this::doTest, TargetBackend.WASM, testDataFilePath);
+                        }
+
+                        private void runTest(String testDataFilePath, java.util.function.Function<String, String> transformer) throws Exception {
+                            KotlinTestUtils.runTest0(path -> doTestWithTransformer(path, transformer), TargetBackend.WASM, testDataFilePath);
+                        }
+
+                        public void testAllFilesPresentInToString() throws Exception {
+                            KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/box/inlineClasses/sealed/methods/string/toString"), Pattern.compile("^([^_](.+))\\.kt$"), null, TargetBackend.WASM, true);
+                        }
+
+                        @TestMetadata("stringToStringN.kt")
+                        public void testStringToStringN() throws Exception {
+                            runTest("compiler/testData/codegen/box/inlineClasses/sealed/methods/string/toString/stringToStringN.kt", TransformersFunctions.getRemoveOptionalJvmInlineAnnotation());
+                        }
+                    }
+                }
+            }
+
             @TestMetadata("compiler/testData/codegen/box/inlineClasses/sealed/returnType")
             @TestDataPath("$PROJECT_ROOT")
             @RunWith(JUnit3RunnerWithInners.class)
