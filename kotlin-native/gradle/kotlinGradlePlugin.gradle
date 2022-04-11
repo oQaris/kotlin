@@ -10,6 +10,15 @@ project.buildscript.repositories {
         mavenCentral()
 }
 
+project.buildscript.configurations.all {
+    resolutionStrategy.eachDependency {
+        if (requested.group == "com.google.code.gson" && requested.name == "gson") {
+            useVersion("2.8.9")
+            because("Force using same gson version because of https://github.com/google/gson/pull/1991")
+        }
+    }
+}
+
 project.buildscript.dependencies {
     classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${project.bootstrapKotlinVersion}"
 }
