@@ -16877,19 +16877,19 @@ public class IrCodegenBoxWasmTestGenerated extends AbstractIrCodegenBoxWasmTest 
                     KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/box/inlineClasses/sealed/methods"), Pattern.compile("^([^_](.+))\\.kt$"), null, TargetBackend.WASM, true);
                 }
 
-                @TestMetadata("compiler/testData/codegen/box/inlineClasses/sealed/methods/string")
+                @TestMetadata("compiler/testData/codegen/box/inlineClasses/sealed/methods/_string")
                 @TestDataPath("$PROJECT_ROOT")
                 @RunWith(JUnit3RunnerWithInners.class)
-                public static class String extends AbstractIrCodegenBoxWasmTest {
+                public static class _string extends AbstractIrCodegenBoxWasmTest {
                     private void runTest(String testDataFilePath) throws Exception {
                         KotlinTestUtils.runTest0(this::doTest, TargetBackend.WASM, testDataFilePath);
                     }
 
-                    public void testAllFilesPresentInString() throws Exception {
-                        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/box/inlineClasses/sealed/methods/string"), Pattern.compile("^([^_](.+))\\.kt$"), null, TargetBackend.WASM, true);
+                    public void testAllFilesPresentIn_string() throws Exception {
+                        KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/box/inlineClasses/sealed/methods/_string"), Pattern.compile("^([^_](.+))\\.kt$"), null, TargetBackend.WASM, true);
                     }
 
-                    @TestMetadata("compiler/testData/codegen/box/inlineClasses/sealed/methods/string/toString")
+                    @TestMetadata("compiler/testData/codegen/box/inlineClasses/sealed/methods/_string/toString")
                     @TestDataPath("$PROJECT_ROOT")
                     @RunWith(JUnit3RunnerWithInners.class)
                     public static class ToString extends AbstractIrCodegenBoxWasmTest {
@@ -16902,12 +16902,167 @@ public class IrCodegenBoxWasmTestGenerated extends AbstractIrCodegenBoxWasmTest 
                         }
 
                         public void testAllFilesPresentInToString() throws Exception {
-                            KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/box/inlineClasses/sealed/methods/string/toString"), Pattern.compile("^([^_](.+))\\.kt$"), null, TargetBackend.WASM, true);
+                            KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("compiler/testData/codegen/box/inlineClasses/sealed/methods/_string/toString"), Pattern.compile("^([^_](.+))\\.kt$"), null, TargetBackend.WASM, true);
                         }
 
                         @TestMetadata("stringToStringN.kt")
                         public void testStringToStringN() throws Exception {
-                            runTest("compiler/testData/codegen/box/inlineClasses/sealed/methods/string/toString/stringToStringN.kt", TransformersFunctions.getRemoveOptionalJvmInlineAnnotation());
+                            runTest("compiler/testData/codegen/box/inlineClasses/sealed/methods/_string/toString/stringToStringN.kt", TransformersFunctions.getRemoveOptionalJvmInlineAnnotation());
+                        }
+
+                        @TestMetadata("stringToString_I1.kt")
+                        public void testStringToString_I1() throws Exception {
+                            runTest("compiler/testData/codegen/box/inlineClasses/sealed/methods/_string/toString/stringToString_I1.kt", TransformersFunctions.getRemoveOptionalJvmInlineAnnotation());
+                        }
+
+                        @TestMetadata("stringToString_I1_I2.kt")
+                        public void testStringToString_I1_I2() throws Exception {
+                            runTest("compiler/testData/codegen/box/inlineClasses/sealed/methods/_string/toString/stringToString_I1_I2.kt", TransformersFunctions.getRemoveOptionalJvmInlineAnnotation());
+                        }
+
+                        @TestMetadata("stringToString_I1_I2_I3.kt")
+                        public void testStringToString_I1_I2_I3() throws Exception {
+                            runTest("compiler/testData/codegen/box/inlineClasses/sealed/methods/_string/toString/stringToString_I1_I2_I3.kt", TransformersFunctions.getRemoveOptionalJvmInlineAnnotation());
+                        }
+
+                        @TestMetadata("stringToString_I1_I2_I3_O2.kt")
+                        public void testStringToString_I1_I2_I3_O2() throws Exception {
+                            runTest("compiler/testData/codegen/box/inlineClasses/sealed/methods/_string/toString/stringToString_I1_I2_I3_O2.kt", TransformersFunctions.getRemoveOptionalJvmInlineAnnotation());
+                        }
+
+                        @TestMetadata("stringToString_I1_I2_O1.kt")
+                        public void testStringToString_I1_I2_O1() throws Exception {
+                            runTest("compiler/testData/codegen/box/inlineClasses/sealed/methods/_string/toString/stringToString_I1_I2_O1.kt", TransformersFunctions.getRemoveOptionalJvmInlineAnnotation());
+                        }
+
+                        @TestMetadata("stringToString_I1_I2_O1_I3.kt")
+                        public void testStringToString_I1_I2_O1_I3() throws Exception {
+                            runTest("compiler/testData/codegen/box/inlineClasses/sealed/methods/_string/toString/stringToString_I1_I2_O1_I3.kt", TransformersFunctions.getRemoveOptionalJvmInlineAnnotation());
+                        }
+
+                        @TestMetadata("stringToString_I1_I2_O1_I3_O2.kt")
+                        public void testStringToString_I1_I2_O1_I3_O2() throws Exception {
+                            runTest("compiler/testData/codegen/box/inlineClasses/sealed/methods/_string/toString/stringToString_I1_I2_O1_I3_O2.kt", TransformersFunctions.getRemoveOptionalJvmInlineAnnotation());
+                        }
+
+                        @TestMetadata("stringToString_I1_I2_O1_O2.kt")
+                        public void testStringToString_I1_I2_O1_O2() throws Exception {
+                            runTest("compiler/testData/codegen/box/inlineClasses/sealed/methods/_string/toString/stringToString_I1_I2_O1_O2.kt", TransformersFunctions.getRemoveOptionalJvmInlineAnnotation());
+                        }
+
+                        @TestMetadata("stringToString_I1_I2_O2.kt")
+                        public void testStringToString_I1_I2_O2() throws Exception {
+                            runTest("compiler/testData/codegen/box/inlineClasses/sealed/methods/_string/toString/stringToString_I1_I2_O2.kt", TransformersFunctions.getRemoveOptionalJvmInlineAnnotation());
+                        }
+
+                        @TestMetadata("stringToString_I1_I3.kt")
+                        public void testStringToString_I1_I3() throws Exception {
+                            runTest("compiler/testData/codegen/box/inlineClasses/sealed/methods/_string/toString/stringToString_I1_I3.kt", TransformersFunctions.getRemoveOptionalJvmInlineAnnotation());
+                        }
+
+                        @TestMetadata("stringToString_I1_I3_O2.kt")
+                        public void testStringToString_I1_I3_O2() throws Exception {
+                            runTest("compiler/testData/codegen/box/inlineClasses/sealed/methods/_string/toString/stringToString_I1_I3_O2.kt", TransformersFunctions.getRemoveOptionalJvmInlineAnnotation());
+                        }
+
+                        @TestMetadata("stringToString_I1_O1.kt")
+                        public void testStringToString_I1_O1() throws Exception {
+                            runTest("compiler/testData/codegen/box/inlineClasses/sealed/methods/_string/toString/stringToString_I1_O1.kt", TransformersFunctions.getRemoveOptionalJvmInlineAnnotation());
+                        }
+
+                        @TestMetadata("stringToString_I1_O1_I3.kt")
+                        public void testStringToString_I1_O1_I3() throws Exception {
+                            runTest("compiler/testData/codegen/box/inlineClasses/sealed/methods/_string/toString/stringToString_I1_O1_I3.kt", TransformersFunctions.getRemoveOptionalJvmInlineAnnotation());
+                        }
+
+                        @TestMetadata("stringToString_I1_O1_I3_O2.kt")
+                        public void testStringToString_I1_O1_I3_O2() throws Exception {
+                            runTest("compiler/testData/codegen/box/inlineClasses/sealed/methods/_string/toString/stringToString_I1_O1_I3_O2.kt", TransformersFunctions.getRemoveOptionalJvmInlineAnnotation());
+                        }
+
+                        @TestMetadata("stringToString_I1_O1_O2.kt")
+                        public void testStringToString_I1_O1_O2() throws Exception {
+                            runTest("compiler/testData/codegen/box/inlineClasses/sealed/methods/_string/toString/stringToString_I1_O1_O2.kt", TransformersFunctions.getRemoveOptionalJvmInlineAnnotation());
+                        }
+
+                        @TestMetadata("stringToString_I1_O2.kt")
+                        public void testStringToString_I1_O2() throws Exception {
+                            runTest("compiler/testData/codegen/box/inlineClasses/sealed/methods/_string/toString/stringToString_I1_O2.kt", TransformersFunctions.getRemoveOptionalJvmInlineAnnotation());
+                        }
+
+                        @TestMetadata("stringToString_I2.kt")
+                        public void testStringToString_I2() throws Exception {
+                            runTest("compiler/testData/codegen/box/inlineClasses/sealed/methods/_string/toString/stringToString_I2.kt", TransformersFunctions.getRemoveOptionalJvmInlineAnnotation());
+                        }
+
+                        @TestMetadata("stringToString_I2_I3.kt")
+                        public void testStringToString_I2_I3() throws Exception {
+                            runTest("compiler/testData/codegen/box/inlineClasses/sealed/methods/_string/toString/stringToString_I2_I3.kt", TransformersFunctions.getRemoveOptionalJvmInlineAnnotation());
+                        }
+
+                        @TestMetadata("stringToString_I2_I3_O2.kt")
+                        public void testStringToString_I2_I3_O2() throws Exception {
+                            runTest("compiler/testData/codegen/box/inlineClasses/sealed/methods/_string/toString/stringToString_I2_I3_O2.kt", TransformersFunctions.getRemoveOptionalJvmInlineAnnotation());
+                        }
+
+                        @TestMetadata("stringToString_I2_O1.kt")
+                        public void testStringToString_I2_O1() throws Exception {
+                            runTest("compiler/testData/codegen/box/inlineClasses/sealed/methods/_string/toString/stringToString_I2_O1.kt", TransformersFunctions.getRemoveOptionalJvmInlineAnnotation());
+                        }
+
+                        @TestMetadata("stringToString_I2_O1_I3.kt")
+                        public void testStringToString_I2_O1_I3() throws Exception {
+                            runTest("compiler/testData/codegen/box/inlineClasses/sealed/methods/_string/toString/stringToString_I2_O1_I3.kt", TransformersFunctions.getRemoveOptionalJvmInlineAnnotation());
+                        }
+
+                        @TestMetadata("stringToString_I2_O1_I3_O2.kt")
+                        public void testStringToString_I2_O1_I3_O2() throws Exception {
+                            runTest("compiler/testData/codegen/box/inlineClasses/sealed/methods/_string/toString/stringToString_I2_O1_I3_O2.kt", TransformersFunctions.getRemoveOptionalJvmInlineAnnotation());
+                        }
+
+                        @TestMetadata("stringToString_I2_O1_O2.kt")
+                        public void testStringToString_I2_O1_O2() throws Exception {
+                            runTest("compiler/testData/codegen/box/inlineClasses/sealed/methods/_string/toString/stringToString_I2_O1_O2.kt", TransformersFunctions.getRemoveOptionalJvmInlineAnnotation());
+                        }
+
+                        @TestMetadata("stringToString_I2_O2.kt")
+                        public void testStringToString_I2_O2() throws Exception {
+                            runTest("compiler/testData/codegen/box/inlineClasses/sealed/methods/_string/toString/stringToString_I2_O2.kt", TransformersFunctions.getRemoveOptionalJvmInlineAnnotation());
+                        }
+
+                        @TestMetadata("stringToString_I3.kt")
+                        public void testStringToString_I3() throws Exception {
+                            runTest("compiler/testData/codegen/box/inlineClasses/sealed/methods/_string/toString/stringToString_I3.kt", TransformersFunctions.getRemoveOptionalJvmInlineAnnotation());
+                        }
+
+                        @TestMetadata("stringToString_I3_O2.kt")
+                        public void testStringToString_I3_O2() throws Exception {
+                            runTest("compiler/testData/codegen/box/inlineClasses/sealed/methods/_string/toString/stringToString_I3_O2.kt", TransformersFunctions.getRemoveOptionalJvmInlineAnnotation());
+                        }
+
+                        @TestMetadata("stringToString_O1.kt")
+                        public void testStringToString_O1() throws Exception {
+                            runTest("compiler/testData/codegen/box/inlineClasses/sealed/methods/_string/toString/stringToString_O1.kt", TransformersFunctions.getRemoveOptionalJvmInlineAnnotation());
+                        }
+
+                        @TestMetadata("stringToString_O1_I3.kt")
+                        public void testStringToString_O1_I3() throws Exception {
+                            runTest("compiler/testData/codegen/box/inlineClasses/sealed/methods/_string/toString/stringToString_O1_I3.kt", TransformersFunctions.getRemoveOptionalJvmInlineAnnotation());
+                        }
+
+                        @TestMetadata("stringToString_O1_I3_O2.kt")
+                        public void testStringToString_O1_I3_O2() throws Exception {
+                            runTest("compiler/testData/codegen/box/inlineClasses/sealed/methods/_string/toString/stringToString_O1_I3_O2.kt", TransformersFunctions.getRemoveOptionalJvmInlineAnnotation());
+                        }
+
+                        @TestMetadata("stringToString_O1_O2.kt")
+                        public void testStringToString_O1_O2() throws Exception {
+                            runTest("compiler/testData/codegen/box/inlineClasses/sealed/methods/_string/toString/stringToString_O1_O2.kt", TransformersFunctions.getRemoveOptionalJvmInlineAnnotation());
+                        }
+
+                        @TestMetadata("stringToString_O2.kt")
+                        public void testStringToString_O2() throws Exception {
+                            runTest("compiler/testData/codegen/box/inlineClasses/sealed/methods/_string/toString/stringToString_O2.kt", TransformersFunctions.getRemoveOptionalJvmInlineAnnotation());
                         }
                     }
                 }
