@@ -5,7 +5,7 @@
 // LANGUAGE: +ValueClasses
 
 @JvmInline
-value class A<T: Any>(val x: List<T>)
+value class A<T : Any>(val x: List<T>)
 
 @JvmInline
 value class B(val x: UInt)
@@ -16,6 +16,7 @@ value class C(val x: Int, val y: B, val z: String = "3")
 @JvmInline
 value class D(val x: C) {
     constructor(x: Int, y: UInt, z: Int) : this(C(x, B(y), z.toString()))
+
     init {
         println(x.x)
     }
@@ -24,15 +25,20 @@ value class D(val x: C) {
 inline fun inlined(x: Int, y: UInt, z: Int): D {
     return D(C(x, B(y), z.toString()))
 }
+
 fun notInlined(x: Int, y: UInt, z: Int) = D(C(x, B(y), z.toString()))
 
 @JvmInline
-value class E(val x: D)
+value class E(val x: D) {
+    var withNonTrivialSetters: D
+        get() = TODO()
+        set(_) = TODO()
+}
 
 @JvmInline
-value class R<T: Any>(val x: Int, val y: UInt, val z: E, val t: A<T>)
+value class R<T : Any>(val x: Int, val y: UInt, val z: E, val t: A<T>)
 
-fun <T: List<Int>> f(r: R<T>) {
+fun <T : List<Int>> f(r: R<T>) {
     println(r)
     println(r.x)
     println(r.y)
@@ -50,7 +56,7 @@ fun <T: List<Int>> f(r: R<T>) {
 fun g(e: E) {
 }
 
-fun <T: List<Int>> h(r: R<T>) {
+fun <T : List<Int>> h(r: R<T>) {
     g(r.z)
     f(r)
     r
@@ -75,13 +81,42 @@ fun h1() {
 
 class NotInlined(var l: R<List<Int>>, var y: Int) {
     override fun toString(): String = l.toString() + l.z.x.x.z
+
     init {
         l = l
     }
-    
+
     fun trySetter() {
         l = l
     }
+
+    var withNonTrivialSetters: R<List<Int>>
+        get() = TODO()
+        set(_) = TODO()
+
+    var withNonTrivialSettersWithBF: R<List<Int>> = l
+        get() {
+            println("1")
+            field
+            field.t
+            field == field
+            return field
+        }
+        set(value) {
+            println("3")
+            field = value
+            field = field
+            println("4")
+        }
+
+    val withNonTrivialGettersWithBF: R<List<Int>> = l
+        get() {
+            println("1")
+            field
+            field.t
+            field == field
+            return field
+        }
 }
 
 fun ekeke(x: NotInlined) {

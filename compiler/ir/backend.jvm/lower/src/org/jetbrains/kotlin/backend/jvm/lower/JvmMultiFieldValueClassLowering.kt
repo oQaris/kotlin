@@ -78,6 +78,13 @@ private class JvmMultiFieldValueClassLowering(context: JvmBackendContext) : JvmV
                 representation?.let { knownExpressions[res] = it }
                 res
             }
+
+        /**
+         * Register value declaration instead of singular expressions when possible
+         */
+        fun registerExpression(getter: IrExpression, representation: ImplementationAgnostic<Unit>) {
+            knownExpressions[getter] = representation
+        }
     }
 
     private val valueDeclarationsRemapper = ValueDeclarationsRemapper()
@@ -112,7 +119,6 @@ private class JvmMultiFieldValueClassLowering(context: JvmBackendContext) : JvmV
                 null
             }
         }
-        //todo flatten class
 
         return declaration
     }
@@ -122,7 +128,11 @@ private class JvmMultiFieldValueClassLowering(context: JvmBackendContext) : JvmV
             replacements.getReplacementRegularClassConstructor(it)?.let { replacement -> addBindingsFor(it, replacement) }
         }
         val fieldsToReplace = declaration.fields.filter { !it.type.isNullable() && it.type.isMultiFieldValueClassType() }.toList()
-        val newFields: List<Pair<List<IrField>, IrAnonymousInitializer?>> = fieldsToReplace.map { oldField ->
+
+        val oldFieldToInitializers: MutableMap<IrField, IrAnonymousInitializer> = mutableMapOf()
+        // we need to preserve order of initializations
+        // todo test it
+        val newFields: List<List<IrField>> = fieldsToReplace.map { oldField ->
             val declarations = replacements.getDeclarations(oldField.type.erasedUpperBound)!!
             val newFields = declarations.fields.map { sourceField ->
                 context.irFactory.buildField {
@@ -145,42 +155,68 @@ private class JvmMultiFieldValueClassLowering(context: JvmBackendContext) : JvmV
             }
             val implementationAgnostic = declarations.ImplementationAgnostic(virtualFields)
 
-            val mainGetter = oldField.correspondingPropertySymbol?.owner?.getter
-            oldField.correspondingPropertySymbol?.owner?.backingField = null
+            val property = oldField.correspondingPropertySymbol?.owner
+            val mainGetter = property?.getter
+            val mainSetter = property?.setter
+            property?.backingField = null
             if (mainGetter != null) {
-                mainGetter.origin = IrDeclarationOrigin.GENERATED_MULTI_FIELD_VALUE_CLASS_MEMBER
-                regularClassMFVCPropertyMainGetters.getOrPut(declaration) { mutableMapOf() }[oldField.name] = mainGetter
-                val nodesToGetters = implementationAgnostic.nodeToExpressionGetters.mapValues { (node, exprGen) ->
-                    if (node == declarations.loweringRepresentation) mainGetter else {
-                        context.irFactory.buildProperty {
-                            val nameAsString = "${oldField.name.asString()}$${declarations.nodeFullNames[node]!!.asString()}"
-                            name = Name.guessByFirstCharacter(nameAsString)
-                            origin = IrDeclarationOrigin.GENERATED_MULTI_FIELD_VALUE_CLASS_MEMBER
-                            visibility = oldField.visibility
-                        }.apply {
-                            parent = declaration
-                            addGetter {
-                                returnType = node.type
+                if (!property.isDelegated && mainGetter.isDefaultGetter(oldField)) {
+                    mainGetter.origin = IrDeclarationOrigin.GENERATED_MULTI_FIELD_VALUE_CLASS_MEMBER
+                    regularClassMFVCPropertyMainGetters.getOrPut(declaration) { mutableMapOf() }[oldField.name] = mainGetter
+                    val nodesToGetters = implementationAgnostic.nodeToExpressionGetters.mapValues { (node, exprGen) ->
+                        if (node == declarations.loweringRepresentation) mainGetter else {
+                            context.irFactory.buildProperty {
+                                val nameAsString = "${oldField.name.asString()}$${declarations.nodeFullNames[node]!!.asString()}"
+                                name = Name.guessByFirstCharacter(nameAsString)
                                 origin = IrDeclarationOrigin.GENERATED_MULTI_FIELD_VALUE_CLASS_MEMBER
+                                visibility = oldField.visibility
                             }.apply {
-                                createDispatchReceiverParameter()
-                                body = with(context.createIrBuilder(this.symbol)) {
-                                    irExprBody(exprGen(this, dispatchReceiverParameter!!))
+                                parent = declaration
+                                addGetter {
+                                    returnType = node.type
+                                    origin = IrDeclarationOrigin.GENERATED_MULTI_FIELD_VALUE_CLASS_MEMBER
+                                }.apply {
+                                    createDispatchReceiverParameter()
+                                    body = with(context.createIrBuilder(this.symbol)) {
+                                        irExprBody(exprGen(this, dispatchReceiverParameter!!))
+                                    }
                                 }
+                            }.getter!!.also {
+                                declaration.declarations.add(it)
                             }
-                        }.getter!!.also {
-                            declaration.declarations.add(it)
+                        }
+                    }
+                    regularClassMFVCPropertyNodes.putAll(nodesToGetters.map { (node, getter) -> getter to node })
+                    for ((node, getter) in nodesToGetters) {
+                        if (node is InternalNode<Unit, Unit>) {
+                            regularClassMFVCPropertyNextGetters[getter] = node.fields.associate { it.name to nodesToGetters[it.node]!! }
                         }
                     }
                 }
-                regularClassMFVCPropertyNodes.putAll(nodesToGetters.map { (node, getter) -> getter to node })
-                for ((node, getter) in nodesToGetters) {
-                    if (node is InternalNode<Unit, Unit>) {
-                        regularClassMFVCPropertyNextGetters[getter] = node.fields.associate { it.name to nodesToGetters[it.node]!! }
-                    }
-                }
             }
-            newFields to oldField.initializer?.let { initializer ->
+            for (accessor in listOfNotNull(mainGetter, mainSetter))
+                accessor.body?.transform(object : IrElementTransformerVoid() {
+                    override fun visitGetField(expression: IrGetField): IrExpression {
+                        if (expression.symbol.owner == oldField) {
+                            require(expression.receiver.let { it is IrGetValue && it.symbol.owner == accessor.dispatchReceiverParameter!! }) {
+                                "Unexpected receiver for IrGetField: ${expression.receiver}"
+                            }
+                            val gettersAndSetters =
+                                newFields.toGettersAndSetters(accessor.dispatchReceiverParameter!!, transformReceiver = true)
+                            val representation = newFields.zip(gettersAndSetters) { newField, (getter, setter) ->
+                                VirtualProperty(newField.type, getter, setter)
+                            }
+                            val fieldRepresentation = declarations.ImplementationAgnostic(representation)
+                            val boxed = fieldRepresentation.boxedExpression(
+                                context.createIrBuilder((currentScope!!.irElement as IrSymbolOwner).symbol), Unit
+                            )
+                            valueDeclarationsRemapper.registerExpression(boxed, fieldRepresentation)
+                            return boxed
+                        }
+                        return super.visitGetField(expression)
+                    }
+                }, null)
+            oldField.initializer?.let { initializer ->
                 context.irFactory.createAnonymousInitializer(
                     startOffset = UNDEFINED_OFFSET,
                     endOffset = UNDEFINED_OFFSET, origin = IrDeclarationOrigin.GENERATED_MULTI_FIELD_VALUE_CLASS_MEMBER,
@@ -195,10 +231,17 @@ private class JvmMultiFieldValueClassLowering(context: JvmBackendContext) : JvmV
                             )
                         }
                     }
+                    oldFieldToInitializers[oldField] = this
                 }
             }
+            newFields
         }
-        declaration.declarations.addAll(newFields.flatMap { (fields, init) -> fields + listOfNotNull(init) })
+        for (i in declaration.declarations.indices) {
+            oldFieldToInitializers[declaration.declarations[i]]?.let { initializer ->
+                declaration.declarations[i] = initializer
+            }
+        }
+        declaration.declarations.addAll(newFields.flatten())
         declaration.declarations.removeAll(fieldsToReplace)
     }
 
@@ -556,10 +599,22 @@ private class JvmMultiFieldValueClassLowering(context: JvmBackendContext) : JvmV
         )
     }
 
-    private fun List<IrField>.toGettersAndSetters(receiver: IrValueParameter) = map { field ->
+    private fun List<IrField>.toGettersAndSetters(receiver: IrValueParameter, transformReceiver: Boolean = false) = map { field ->
         Pair<ExpressionGenerator<Unit>, ExpressionSupplier<Unit>>(
-            { irGetField(irGet(receiver), field) },
-            { _, value: IrExpression -> irSetField(irGet(receiver), field, value) },
+            {
+                val initialGetReceiver = irGet(receiver)
+                val resultReceiver =
+                    if (transformReceiver) initialGetReceiver.transform(this@JvmMultiFieldValueClassLowering, null)
+                    else initialGetReceiver
+                irGetField(resultReceiver, field)
+            },
+            { _, value: IrExpression ->
+                val initialGetReceiver = irGet(receiver)
+                val resultReceiver =
+                    if (transformReceiver) initialGetReceiver.transform(this@JvmMultiFieldValueClassLowering, null)
+                    else initialGetReceiver
+                irSetField(resultReceiver, field, value)
+            },
         )
     }
 
@@ -604,6 +659,22 @@ private class JvmMultiFieldValueClassLowering(context: JvmBackendContext) : JvmV
             }
         }
         val transformedExpression = expression.transform(this@JvmMultiFieldValueClassLowering, null)
+        if (transformedExpression is IrCall) {
+            val callee = transformedExpression.symbol.owner
+            if (callee == declarations.boxMethod) {
+                require(transformedExpression.valueArgumentsCount == declarations.fields.size) {
+                    "Bad arguments number for box-method: ${transformedExpression.valueArgumentsCount}"
+                }
+                for ((variable, argument) in variables zip List(transformedExpression.valueArgumentsCount) {
+                    transformedExpression.getValueArgument(it)
+                }) {
+                    if (argument != null) {
+                        +variable.second(this, Unit, argument)
+                    }
+                }
+                return
+            }
+        }
         (transformedExpression as? IrCall)?.let { makeLeavesGetters(it.symbol.owner) }?.let { geters ->
             val receiver = irTemporary(transformedExpression.dispatchReceiver)
             require(geters.size == variables.size) { "Number of getters must be equal to number of variables" }
@@ -628,23 +699,43 @@ private class JvmMultiFieldValueClassLowering(context: JvmBackendContext) : JvmV
 
     override fun visitStatementContainer(container: IrStatementContainer) {
         super.visitStatementContainer(container)
-        visitStatementContainer(container.statements)
-        // todo
+        deleteUselessBoxes(container)
     }
 
-    private fun visitStatementContainer(statements: MutableList<IrStatement>) {
+    private fun deleteUselessBoxes(container: IrStatementContainer) {
+        val statements = container.statements
+
         // Removing box-impl's but not getters because they are auto-generated
-        fun IrStatement.isBoxCallStatement() = this is IrCall && valueDeclarationsRemapper.implementationAgnostic(this) != null &&
+        fun IrExpression.isBoxCallStatement() = this is IrCall && valueDeclarationsRemapper.implementationAgnostic(this) != null &&
                 List(valueArgumentsCount) { getValueArgument(it) }.all { it == null || it is IrGetField || it is IrGetValue }
+
+        fun IrStatement.coercionToUnitArgument() =
+            (this as? IrTypeOperatorCall)?.takeIf { it.operator == IrTypeOperator.IMPLICIT_COERCION_TO_UNIT }?.argument
+
+        fun IrStatement.isBoxCallStatement(): Boolean {
+            val coercionToUnitArgument = coercionToUnitArgument()
+            if (coercionToUnitArgument?.isBoxCallStatement() == true || this is IrExpression && this.isBoxCallStatement()) {
+                return true
+            }
+            if (coercionToUnitArgument is IrStatementContainer && (coercionToUnitArgument.statements.lastOrNull() as? IrExpression)?.isBoxCallStatement() == true) {
+                coercionToUnitArgument.statements.popLast()
+            }
+            return false
+        }
+
         if (statements.isEmpty()) return
+
         val last = statements.popLast()
-        statements.removeIf {
-            when {
-                it.isBoxCallStatement() -> true
-                it is IrTypeOperatorCall && it.operator == IrTypeOperator.IMPLICIT_COERCION_TO_UNIT && it.argument.isBoxCallStatement() -> true
-                else -> false
+
+        statements.removeIf { it.isBoxCallStatement() }
+        for (statement in statements) {
+            if (statement is IrStatementContainer && statement.statements.lastOrNull()?.isBoxCallStatement() == true) {
+                statement.statements.removeLast()
             }
         }
-        statements.add(last)
+        statements.add(last) // we don't check delete it anyway
     }
+
+    private fun IrSimpleFunction.isDefaultGetter(field: IrField): Boolean =
+        ((body?.statements?.singleOrNull() as? IrReturn)?.value as? IrGetField)?.symbol?.owner == field
 }
