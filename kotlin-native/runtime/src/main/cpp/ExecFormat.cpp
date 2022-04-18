@@ -32,6 +32,9 @@
 #include <vector>
 
 #include "KAssert.h"
+#include "cpp_support/Memory.hpp"
+
+using namespace kotlin;
 
 namespace {
 
@@ -75,7 +78,7 @@ Elf_Ehdr* findElfHeader() {
 
 void initSymbols() {
   RuntimeAssert(symbols == nullptr, "Init twice");
-  symbols = konanConstructInstance<SymRecordList>();
+  symbols = std_support::knew<SymRecordList>();
   Elf_Ehdr* ehdr = findElfHeader();
   if (ehdr == nullptr) return;
   RuntimeAssert(strncmp((const char*)ehdr->e_ident, ELFMAG, SELFMAG) == 0, "Must be an ELF");
@@ -151,6 +154,9 @@ extern "C" bool AddressToSymbol(const void* address, char* resultBuffer, size_t 
 #include <string.h>
 
 #include "KAssert.h"
+#include "cpp_support/Memory.hpp"
+
+using namespace kotlin;
 
 namespace {
 
@@ -158,10 +164,10 @@ static void* mapModuleFile(HMODULE hModule) {
   DWORD bufferLength = 64;
   wchar_t* buffer = nullptr;
   for (;;) {
-    auto newBuffer = (wchar_t*)konanAllocMemory(sizeof(wchar_t) * bufferLength);
+    auto newBuffer = (wchar_t*)konan::calloc(bufferLength, sizeof(wchar_t));
     RuntimeAssert(newBuffer != nullptr, "Out of memory");
     if (buffer != nullptr) {
-      konanFreeMemory(buffer);
+      konan::free(buffer);
     }
     buffer = newBuffer;
 
@@ -177,7 +183,7 @@ static void* mapModuleFile(HMODULE hModule) {
     }
 
     // Invalid result.
-    konanFreeMemory(buffer);
+    konan::free(buffer);
     return nullptr;
   }
 
@@ -190,7 +196,7 @@ static void* mapModuleFile(HMODULE hModule) {
       /* dwFlagsAndAttributes = */ FILE_ATTRIBUTE_NORMAL,
       /* hTemplateFile = */ nullptr
   );
-  konanFreeMemory(buffer);
+  konan::free(buffer);
   if (hFile == INVALID_HANDLE_VALUE) {
     // Can't open module file.
     return nullptr;
@@ -234,9 +240,6 @@ class SymbolTable {
   IMAGE_SECTION_HEADER* sectionHeaders = nullptr;
   IMAGE_SYMBOL* symbols = nullptr;
   DWORD numberOfSymbols = 0;
-
-  // Note: it doesn't free resources yet.
-  ~SymbolTable() {}
 
   static const int SYMBOL_SHORT_NAME_LENGTH = 8;
 
@@ -297,6 +300,9 @@ class SymbolTable {
     }
   }
 
+  // Note: it doesn't free resources yet.
+  ~SymbolTable() {}
+
   bool functionAddressToSymbol(const void* address, char* resultBuffer, size_t resultBufferSize, ptrdiff_t &resultOffset) {
     IMAGE_SYMBOL* symbol = findFunctionSymbol(address);
     if (symbol == nullptr) {
@@ -322,7 +328,7 @@ extern "C" bool AddressToSymbol(const void* address, char* resultBuffer, size_t 
     int rv = GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
                reinterpret_cast<LPCWSTR>(&AddressToSymbol), &hModule);
     RuntimeAssert(rv != 0, "GetModuleHandleExW fails");
-    theExeSymbolTable = konanConstructInstance<SymbolTable>(hModule);
+    theExeSymbolTable = std_support::knew<SymbolTable>(hModule);
   }
   return theExeSymbolTable->functionAddressToSymbol(address, resultBuffer, resultBufferSize, resultOffset);
 }
@@ -330,6 +336,8 @@ extern "C" bool AddressToSymbol(const void* address, char* resultBuffer, size_t 
 #elif __has_include("dlfcn.h")
 
 #include <dlfcn.h>
+
+#include "Porting.h"
 
 extern "C" bool AddressToSymbol(const void* address, char* resultBuffer, size_t resultBufferSize, ptrdiff_t &resultOffset) {
     if (address == nullptr) return false;

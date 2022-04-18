@@ -10,6 +10,7 @@
 
 #include "cpp_support/Span.hpp"
 #include "Format.h"
+#include "Porting.h"
 #include "StackTrace.hpp"
 
 using namespace kotlin;

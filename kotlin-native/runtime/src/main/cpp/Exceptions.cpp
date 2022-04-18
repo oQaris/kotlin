@@ -29,6 +29,7 @@
 #include "Types.h"
 #include "Utils.hpp"
 #include "ObjCExceptions.h"
+#include "Porting.h"
 
 // Defined in RuntimeUtils.kt
 extern "C" void Kotlin_runUnhandledExceptionHook(KRef exception);

@@ -14,6 +14,7 @@
   * limitations under the License.
   */
 
+#include "Alloc.h"
 #include "Memory.h"
 #include "Natives.h"
 #include "Runtime.h"

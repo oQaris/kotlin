@@ -44,6 +44,17 @@
 #import "Mutex.hpp"
 #import "Exceptions.h"
 
+using namespace kotlin;
+
+namespace {
+
+template <typename T>
+inline T* konanAllocArray(size_t length) {
+    return reinterpret_cast<T*>(konan::calloc(length, sizeof(T)));
+}
+
+}
+
 struct ObjCToKotlinMethodAdapter {
   const char* selector;
   const char* encoding;
@@ -720,7 +731,7 @@ static const TypeInfo* createTypeInfo(
   bool itableEqualsSuper,
   const TypeInfo* fieldsInfo
 ) {
-  TypeInfo* result = (TypeInfo*)konanAllocMemory(sizeof(TypeInfo) + vtable.size() * sizeof(void*));
+  TypeInfo* result = (TypeInfo*)konan::calloc(1, sizeof(TypeInfo) + vtable.size() * sizeof(void*));
   result->typeInfo_ = result;
 
   result->flags_ = TF_OBJC_DYNAMIC;
@@ -770,7 +781,7 @@ static const TypeInfo* createTypeInfo(
 
   result->packageName_ = nullptr;
   result->relativeName_ = nullptr; // TODO: add some info.
-  result->writableInfo_ = (WritableTypeInfo*)konanAllocMemory(sizeof(WritableTypeInfo));
+  result->writableInfo_ = (WritableTypeInfo*)konan::calloc(1, sizeof(WritableTypeInfo));
 
   for (size_t i = 0; i < vtable.size(); ++i) result->vtable()[i] = vtable[i];
 

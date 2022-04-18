@@ -27,7 +27,6 @@
 #include "PthreadUtils.h"
 #endif
 
-#include "Alloc.h"
 #include "Exceptions.h"
 #include "KAssert.h"
 #include "Memory.h"
@@ -35,6 +34,7 @@
 #include "Runtime.h"
 #include "Types.h"
 #include "Worker.h"
+#include "cpp_support/Memory.hpp"
 
 using namespace kotlin;
 
@@ -359,7 +359,7 @@ class State {
     Worker* worker = nullptr;
     {
       Locker locker(&lock_);
-      worker = konanConstructInstance<Worker>(nextWorkerId(), exceptionHandling, customName, kind);
+      worker = std_support::knew<Worker>(nextWorkerId(), exceptionHandling, customName, kind);
       if (worker == nullptr) return nullptr;
       workers_[worker->id()] = worker;
     }
@@ -392,7 +392,7 @@ class State {
       }
     }
     GC_UnregisterWorker(worker);
-    konanDestructInstance(worker);
+    std_support::kdelete(worker);
   }
 
   Future* addJobToWorkerUnlocked(
@@ -405,7 +405,7 @@ class State {
     if (it == workers_.end()) return nullptr;
     worker = it->second;
 
-    future = konanConstructInstance<Future>(nextFutureId());
+    future = std_support::knew<Future>(nextFutureId());
     futures_[future->id()] = future;
 
     Job job;
@@ -507,7 +507,7 @@ class State {
        auto it = futures_.find(id);
        if (it != futures_.end()) {
          futures_.erase(it);
-         konanDestructInstance(future);
+         std_support::kdelete(future);
        }
     }
 
@@ -643,11 +643,11 @@ State* theState() {
     return state;
   }
 
-  State* result = konanConstructInstance<State>();
+  State* result = std_support::knew<State>();
 
   State* old = __sync_val_compare_and_swap(&state, nullptr, result);
   if (old != nullptr) {
-    konanDestructInstance(result);
+    std_support::kdelete(result);
     // Someone else inited this data.
     return old;
   }

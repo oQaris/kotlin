@@ -53,6 +53,8 @@
 #include "Utils.hpp"
 #include "WorkerBoundReference.h"
 #include "Weak.h"
+#include "cpp_support/Memory.hpp"
+#include "cpp_support/UnorderedMap.hpp"
 
 #ifdef KONAN_OBJC_INTEROP
 #include "ObjCMMAPI.h"
@@ -196,8 +198,11 @@ struct CycleDetectorRootset {
   KStdVector<ScopedRefHolder> heldRefs;
 };
 
-class CycleDetector : private kotlin::Pinned, public KonanAllocatorAware {
+class CycleDetector : private kotlin::Pinned {
  public:
+  CycleDetector() = default;
+  ~CycleDetector() = default;
+
   static void insertCandidateIfNeeded(KRef object) {
     if (canBeACandidate(object))
       instance().insertCandidate(object);
@@ -211,12 +216,9 @@ class CycleDetector : private kotlin::Pinned, public KonanAllocatorAware {
   static CycleDetectorRootset collectRootset();
 
  private:
-  CycleDetector() = default;
-  ~CycleDetector() = default;
-
   static CycleDetector& instance() {
     // Only store a pointer to CycleDetector in .bss
-    static CycleDetector* result = new CycleDetector();
+    static CycleDetector* result = std_support::knew<CycleDetector>();
     return *result;
   }
 
@@ -289,13 +291,13 @@ public:
     memset(containerAllocs, 0, sizeof(containerAllocs));
     memset(objectAllocs, 0, sizeof(objectAllocs));
     memset(updateCounters, 0, sizeof(updateCounters));
-    allocationHistogram = konanConstructInstance<KStdUnorderedMap<int, int>>();
+    allocationHistogram = std_support::knew<std_support::unordered_map<int, int>>();
     allocCacheHit = 0;
     allocCacheMiss = 0;
   }
 
   void deinit() {
-    konanDestructInstance(allocationHistogram);
+    std_support::kdelete(allocationHistogram);
     allocationHistogram = nullptr;
   }
 
@@ -508,7 +510,7 @@ void ObjHeader::SetAssociatedObject(void* obj) {
 class ForeignRefManager {
  public:
   static ForeignRefManager* create() {
-    ForeignRefManager* result = konanConstructInstance<ForeignRefManager>();
+    ForeignRefManager* result = std_support::knew<ForeignRefManager>();
     result->addRef();
     return result;
   }
@@ -525,7 +527,7 @@ class ForeignRefManager {
       // so it can process the queue pretending like it takes ownership of all its objects:
       this->processAbandoned();
 
-      konanDestructInstance(this);
+      std_support::kdelete(this);
     }
   }
 
@@ -538,14 +540,14 @@ class ForeignRefManager {
         return false;
       }
 
-      konanDestructInstance(this);
+      std_support::kdelete(this);
     }
 
     return true;
   }
 
   void enqueueReleaseRef(ObjHeader* obj) {
-    ListNode* newListNode = konanConstructInstance<ListNode>();
+    ListNode* newListNode = std_support::knew<ListNode>();
     newListNode->obj = obj;
     while (true) {
       ListNode* next = this->releaseList;
@@ -568,7 +570,7 @@ class ForeignRefManager {
     while (toProcess != nullptr) {
       process(toProcess->obj);
       ListNode* next = toProcess->next;
-      konanDestructInstance(toProcess);
+      std_support::kdelete(toProcess);
       toProcess = next;
     }
   }
@@ -613,11 +615,11 @@ class ThreadLocalStorage {
 public:
     using Key = void**;
 
-    void Init() noexcept { map_ = konanConstructInstance<Map>(); }
+    void Init() noexcept { map_ = std_support::knew<Map>(); }
 
     void Deinit() noexcept {
         RuntimeAssert(map_->size() == 0, "Must be already cleared");
-        konanDestructInstance(map_);
+        std_support::kdelete(map_);
     }
 
     void Add(Key key, int size) noexcept {
@@ -633,7 +635,7 @@ public:
 
     void Commit() noexcept {
         RuntimeAssert(storage_ == nullptr, "Cannot commit storage twice");
-        storage_ = reinterpret_cast<KRef*>(konanAllocMemory(size_ * sizeof(KRef)));
+        storage_ = reinterpret_cast<KRef*>(konan::calloc(size_, sizeof(KRef)));
     }
 
     void Clear() noexcept {
@@ -641,7 +643,7 @@ public:
         for (int i = 0; i < size_; ++i) {
             UpdateHeapRef(storage_ + i, nullptr);
         }
-        konanFreeMemory(storage_);
+        konan::free(storage_);
         map_->clear();
     }
 
@@ -764,9 +766,9 @@ namespace {
 
 #if TRACE_MEMORY
 #define INIT_TRACE(state) \
-  memoryState->containers = konanConstructInstance<ContainerHeaderSet>();
+  memoryState->containers = std_support::knew<ContainerHeaderSet>();
 #define DEINIT_TRACE(state) \
-   konanDestructInstance(memoryState->containers); \
+   std_support::kdelete(memoryState->containers); \
    memoryState->containers = nullptr;
 #else
 #define INIT_TRACE(state)
@@ -1066,7 +1068,7 @@ ContainerHeader* allocContainer(MemoryState* state, size_t size) {
     if (state != nullptr)
         state->allocSinceLastGc += size;
 #endif
-    result = konanConstructSizedInstance<ContainerHeader>(alignUp(size, kObjectAlignment));
+    result = new (konan::calloc(1, alignUp(size, kObjectAlignment))) ContainerHeader();
     atomicAdd(&allocCount, 1);
   }
   if (state != nullptr) {
@@ -1107,7 +1109,7 @@ void processFinalizerQueue(MemoryState* state) {
     state->containers->erase(container);
 #endif
     CONTAINER_DESTROY_EVENT(state, container)
-    konanFreeMemory(container);
+    konan::free(container);
     atomicAdd(&allocCount, -1);
   }
   RuntimeAssert(state->finalizerQueueSize == 0, "Queue must be empty here");
@@ -1148,7 +1150,7 @@ void scheduleDestroyContainer(MemoryState* state, ContainerHeader* container) {
     processFinalizerQueue(state);
   }
 #else
-  konanFreeMemory(container);
+  konan::free(container);
   atomicAdd(&allocCount, -1);
   CONTAINER_DESTROY_EVENT(state, container);
 #endif
@@ -1759,7 +1761,7 @@ inline ArenaContainer* initedArena(ObjHeader** auxSlot) {
   auto frame = asFrameOverlay(auxSlot);
   auto arena = reinterpret_cast<ArenaContainer*>(frame->arena);
   if (!arena) {
-    arena = konanConstructInstance<ArenaContainer>();
+    arena = std_support::knew<ArenaContainer>();
     MEMORY_LOG("Initializing arena in %p\n", frame)
     arena->Init();
     frame->arena = arena;
@@ -2052,14 +2054,14 @@ MemoryState* initMemory(bool firstRuntime) {
                 "Layout mismatch");
   RuntimeAssert(sizeof(FrameOverlay) % sizeof(ObjHeader**) == 0, "Frame overlay should contain only pointers");
   RuntimeAssert(memoryState == nullptr, "memory state must be clear");
-  memoryState = konanConstructInstance<MemoryState>();
+  memoryState = std_support::knew<MemoryState>();
   INIT_EVENT(memoryState)
 #if USE_GC
-  memoryState->toFree = konanConstructInstance<ContainerHeaderList>();
-  memoryState->roots = konanConstructInstance<ContainerHeaderList>();
+  memoryState->toFree = std_support::knew<ContainerHeaderList>();
+  memoryState->roots = std_support::knew<ContainerHeaderList>();
   memoryState->gcInProgress = false;
   memoryState->gcSuspendCount = 0;
-  memoryState->toRelease = konanConstructInstance<ContainerHeaderList>();
+  memoryState->toRelease = std_support::knew<ContainerHeaderList>();
   initGcThreshold(memoryState, kGcThreshold);
   initGcCollectCyclesThreshold(memoryState, kMaxToFreeSizeThreshold);
   memoryState->allocSinceLastGcThreshold = kMaxGcAllocThreshold;
@@ -2118,9 +2120,9 @@ void deinitMemory(MemoryState* memoryState, bool destroyRuntime) {
   } while (memoryState->toRelease->size() > 0 || !memoryState->foreignRefManager->tryReleaseRefOwned());
   RuntimeAssert(memoryState->toFree->size() == 0, "Some memory have not been released after GC");
   RuntimeAssert(memoryState->toRelease->size() == 0, "Some memory have not been released after GC");
-  konanDestructInstance(memoryState->toFree);
-  konanDestructInstance(memoryState->roots);
-  konanDestructInstance(memoryState->toRelease);
+  std_support::kdelete(memoryState->toFree);
+  std_support::kdelete(memoryState->roots);
+  std_support::kdelete(memoryState->toRelease);
   memoryState->tls.Deinit();
   RuntimeAssert(memoryState->finalizerQueue == nullptr, "Finalizer queue must be empty");
   RuntimeAssert(memoryState->finalizerQueueSize == 0, "Finalizer queue must be empty");
@@ -2148,7 +2150,7 @@ void deinitMemory(MemoryState* memoryState, bool destroyRuntime) {
   PRINT_EVENT(memoryState)
   DEINIT_EVENT(memoryState)
 
-  konanFreeMemory(memoryState);
+  konan::free(memoryState);
   ::memoryState = nullptr;
 }
 
@@ -2615,9 +2617,9 @@ void stopGC() {
   if (memoryState->toRelease != nullptr) {
     memoryState->gcSuspendCount = 0;
     garbageCollect(memoryState, true);
-    konanDestructInstance(memoryState->toRelease);
-    konanDestructInstance(memoryState->toFree);
-    konanDestructInstance(memoryState->roots);
+    std_support::kdelete(memoryState->toRelease);
+    std_support::kdelete(memoryState->toFree);
+    std_support::kdelete(memoryState->roots);
     memoryState->toRelease = nullptr;
     memoryState->toFree = nullptr;
     memoryState->roots = nullptr;
@@ -2627,9 +2629,9 @@ void stopGC() {
 void startGC() {
   GC_LOG("startGC\n")
   if (memoryState->toFree == nullptr) {
-    memoryState->toFree = konanConstructInstance<ContainerHeaderList>();
-    memoryState->toRelease = konanConstructInstance<ContainerHeaderList>();
-    memoryState->roots = konanConstructInstance<ContainerHeaderList>();
+    memoryState->toFree = std_support::knew<ContainerHeaderList>();
+    memoryState->toRelease = std_support::knew<ContainerHeaderList>();
+    memoryState->roots = std_support::knew<ContainerHeaderList>();
     memoryState->gcSuspendCount = 0;
   }
 }
@@ -3142,7 +3144,7 @@ MetaObjHeader* ObjHeader::createMetaObject(ObjHeader* object) {
   }
 #endif
 
-  MetaObjHeader* meta = konanConstructInstance<MetaObjHeader>();
+  MetaObjHeader* meta = std_support::knew<MetaObjHeader>();
   meta->typeInfo_ = typeInfo;
 #if KONAN_NO_THREADS
   *location = reinterpret_cast<TypeInfo*>(meta);
@@ -3150,7 +3152,7 @@ MetaObjHeader* ObjHeader::createMetaObject(ObjHeader* object) {
   TypeInfo* old = __sync_val_compare_and_swap(location, typeInfo, reinterpret_cast<TypeInfo*>(meta));
   if (old != typeInfo) {
     // Someone installed a new meta-object since the check.
-    konanFreeMemory(meta);
+    konan::free(meta);
     meta = reinterpret_cast<MetaObjHeader*>(old);
   }
 #endif
@@ -3170,7 +3172,7 @@ void ObjHeader::destroyMetaObject(ObjHeader* object) {
   Kotlin_ObjCExport_detachAndReleaseAssociatedObject(meta->associatedObject_);
 #endif
 
-  konanFreeMemory(meta);
+  konan::free(meta);
 }
 
 void ObjectContainer::Init(MemoryState* state, const TypeInfo* typeInfo) {
@@ -3220,7 +3222,7 @@ void ArenaContainer::Deinit() {
   while (chunk != nullptr) {
     auto toRemove = chunk;
     chunk = chunk->next;
-    konanFreeMemory(toRemove);
+    konan::free(toRemove);
   }
 }
 
@@ -3228,7 +3230,7 @@ bool ArenaContainer::allocContainer(container_size_t minSize) {
   auto size = minSize + sizeof(ContainerHeader) + sizeof(ContainerChunk);
   size = alignUp(size, kContainerAlignment);
   // TODO: keep simple cache of container chunks.
-  ContainerChunk* result = konanConstructSizedInstance<ContainerChunk>(size);
+  ContainerChunk* result = new (konan::calloc(1, size)) ContainerChunk();
   RuntimeCheck(result != nullptr, "Cannot alloc memory");
   if (result == nullptr) return false;
   result->next = currentChunk_;

@@ -10,7 +10,6 @@
 #include <cstddef>
 #include <cstdint>
 
-#include "Alloc.h"
 #include "Memory.h"
 #include "TypeInfo.h"
 #include "Utils.hpp"
@@ -21,7 +20,7 @@ namespace kotlin {
 namespace mm {
 
 // Optional data that's lazily allocated only for objects that need it.
-class ExtraObjectData : private Pinned, public KonanAllocatorAware {
+class ExtraObjectData : private Pinned {
 public:
     // flags are stored as single atomic uint32, values are bit numbers in that uint32
     enum Flags : uint32_t {

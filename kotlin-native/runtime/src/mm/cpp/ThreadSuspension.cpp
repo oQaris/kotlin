@@ -11,6 +11,7 @@
 #include <mutex>
 
 #include "Logging.hpp"
+#include "Porting.h"
 #include "StackTrace.hpp"
 
 namespace {

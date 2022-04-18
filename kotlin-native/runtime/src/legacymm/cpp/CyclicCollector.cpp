@@ -17,7 +17,6 @@
 #define WITH_WORKERS 1
 #endif
 
-#include "Alloc.h"
 #include "Atomic.h"
 #include "KAssert.h"
 #include "Memory.h"
@@ -25,6 +24,7 @@
 #include "Natives.h"
 #include "Porting.h"
 #include "Types.h"
+#include "cpp_support/Memory.hpp"
 
 #if WITH_WORKERS
 #include <pthread.h>
@@ -445,7 +445,7 @@ CyclicCollector* cyclicCollector = nullptr;
 void cyclicInit() {
 #if WITH_WORKERS
   RuntimeAssert(cyclicCollector == nullptr, "Must be not yet inited");
-  cyclicCollector = konanConstructInstance<CyclicCollector>();
+  cyclicCollector = std_support::knew<CyclicCollector>();
 #endif
 }
 
@@ -456,7 +456,7 @@ void cyclicDeinit(bool enabled) {
   local->terminate(enabled);
   cyclicCollector = nullptr;
   // Workaround data race with threads non-atomically reading and then using [cyclicCollector].
-  // konanDestructInstance(local);
+  // std_support::kdelete(local);
   // Note: memory leaks here indeed, but usually it happens once per application.
   // Make best effort to clean some memory:
   local->clear();
