@@ -53,8 +53,12 @@
 #include "Utils.hpp"
 #include "WorkerBoundReference.h"
 #include "Weak.h"
+#include "cpp_support/Deque.hpp"
+#include "cpp_support/List.hpp"
 #include "cpp_support/Memory.hpp"
 #include "cpp_support/UnorderedMap.hpp"
+#include "cpp_support/UnorderedSet.hpp"
+#include "cpp_support/Vector.hpp"
 
 #ifdef KONAN_OBJC_INTEROP
 #include "ObjCMMAPI.h"
@@ -76,6 +80,8 @@
 #if COLLECT_STATISTIC
 #include <algorithm>
 #endif
+
+using namespace kotlin;
 
 namespace {
 
@@ -133,15 +139,15 @@ constexpr size_t kGcCollectCyclesMinimumDuration = 200;
 
 #endif  // USE_GC
 
-typedef KStdUnorderedSet<ContainerHeader*> ContainerHeaderSet;
-typedef KStdVector<ContainerHeader*> ContainerHeaderList;
-typedef KStdDeque<ContainerHeader*> ContainerHeaderDeque;
-typedef KStdVector<KRef> KRefList;
-typedef KStdVector<KRef*> KRefPtrList;
-typedef KStdUnorderedSet<KRef> KRefSet;
-typedef KStdUnorderedMap<KRef, KInt> KRefIntMap;
-typedef KStdDeque<KRef> KRefDeque;
-typedef KStdDeque<KRefList> KRefListDeque;
+typedef std_support::unordered_set<ContainerHeader*> ContainerHeaderSet;
+typedef std_support::vector<ContainerHeader*> ContainerHeaderList;
+typedef std_support::deque<ContainerHeader*> ContainerHeaderDeque;
+typedef std_support::vector<KRef> KRefList;
+typedef std_support::vector<KRef*> KRefPtrList;
+typedef std_support::unordered_set<KRef> KRefSet;
+typedef std_support::unordered_map<KRef, KInt> KRefIntMap;
+typedef std_support::deque<KRef> KRefDeque;
+typedef std_support::deque<KRefList> KRefListDeque;
 
 // A little hack that allows to enable -O2 optimizations
 // Prevents clang from replacing FrameOverlay struct
@@ -191,11 +197,11 @@ class ScopedRefHolder : private kotlin::MoveOnly {
 
 struct CycleDetectorRootset {
   // Orders roots.
-  KStdVector<KRef> roots;
+  std_support::vector<KRef> roots;
   // Pins a state of each root.
-  KStdUnorderedMap<KRef, KStdVector<KRef>> rootToFields;
+  std_support::unordered_map<KRef, std_support::vector<KRef>> rootToFields;
   // Holding roots and their fields to avoid GC-ing them.
-  KStdVector<ScopedRefHolder> heldRefs;
+  std_support::vector<ScopedRefHolder> heldRefs;
 };
 
 class CycleDetector : private kotlin::Pinned {
@@ -246,9 +252,9 @@ class CycleDetector : private kotlin::Pinned {
   }
 
   kotlin::SpinLock<kotlin::MutexThreadStateHandling::kIgnore> lock_;
-  using CandidateList = KStdList<KRef>;
+  using CandidateList = std_support::list<KRef>;
   CandidateList candidateList_;
-  KStdUnorderedMap<KRef, CandidateList::iterator> candidateInList_;
+  std_support::unordered_map<KRef, CandidateList::iterator> candidateInList_;
 };
 
 #endif  // USE_CYCLE_DETECTOR
@@ -267,7 +273,7 @@ public:
   // Free per container type counters.
   uint64_t objectAllocs[6];
   // Histogram of allocation size distribution.
-  KStdUnorderedMap<int, int>* allocationHistogram;
+  std_support::unordered_map<int, int>* allocationHistogram;
   // Number of allocation cache hits.
   int allocCacheHit;
   // Number of allocation cache misses.
@@ -401,7 +407,7 @@ public:
     konan::consolePrintf("\n");
 
     konan::consolePrintf("Allocation histogram:\n");
-    KStdVector<int> keys(allocationHistogram->size());
+    std_support::vector<int> keys(allocationHistogram->size());
     int index = 0;
     for (auto& it : *allocationHistogram) {
       keys[index++] = it.first;
@@ -668,7 +674,7 @@ private:
         int size;
     };
 
-    using Map = KStdUnorderedMap<Key, Entry>;
+    using Map = std_support::unordered_map<Key, Entry>;
 
     Map* map_ = nullptr;
     KRef* storage_ = nullptr;
@@ -725,7 +731,7 @@ struct MemoryState {
 #endif // USE_GC
 
   // A stack of initializing singletons.
-  KStdVector<std::pair<ObjHeader**, ObjHeader*>> initializingSingletons;
+  std_support::vector<std::pair<ObjHeader**, ObjHeader*>> initializingSingletons;
 
   bool isMainThread = false;
 
@@ -1080,7 +1086,7 @@ ContainerHeader* allocContainer(MemoryState* state, size_t size) {
   return result;
 }
 
-ContainerHeader* allocAggregatingFrozenContainer(KStdVector<ContainerHeader*>& containers) {
+ContainerHeader* allocAggregatingFrozenContainer(std_support::vector<ContainerHeader*>& containers) {
   auto componentSize = containers.size();
   auto* superContainer = allocContainer(memoryState, sizeof(ContainerHeader) + sizeof(void*) * componentSize);
   auto* place = reinterpret_cast<ContainerHeader**>(superContainer + 1);
@@ -1228,7 +1234,7 @@ void freeContainer(ContainerHeader* container) {
   * When we see GREY during DFS, it means we see cycle.
   */
 void depthFirstTraversal(ContainerHeader* start, bool* hasCycles,
-                         KRef* firstBlocker, KStdVector<ContainerHeader*>* order) {
+                         KRef* firstBlocker, std_support::vector<ContainerHeader*>* order) {
   ContainerHeaderDeque toVisit;
   toVisit.push_back(start);
   start->setSeen();
@@ -1276,9 +1282,9 @@ void depthFirstTraversal(ContainerHeader* start, bool* hasCycles,
 }
 
 void traverseStronglyConnectedComponent(ContainerHeader* start,
-                                        KStdUnorderedMap<ContainerHeader*,
-                                            KStdVector<ContainerHeader*>> const* reversedEdges,
-                                        KStdVector<ContainerHeader*>* component) {
+                                        std_support::unordered_map<ContainerHeader*,
+                                            std_support::vector<ContainerHeader*>> const* reversedEdges,
+                                        std_support::vector<ContainerHeader*>* component) {
   ContainerHeaderDeque toVisit;
   toVisit.push_back(start);
   start->mark();
@@ -2785,7 +2791,7 @@ bool clearSubgraphReferences(ObjHeader* root, bool checked) {
 }
 
 void freezeAcyclic(ContainerHeader* rootContainer, ContainerHeaderSet* newlyFrozen) {
-  KStdDeque<ContainerHeader*> queue;
+  std_support::deque<ContainerHeader*> queue;
   queue.push_back(rootContainer);
   while (!queue.empty()) {
     ContainerHeader* current = queue.front();
@@ -2810,17 +2816,17 @@ void freezeAcyclic(ContainerHeader* rootContainer, ContainerHeaderSet* newlyFroz
 }
 
 void freezeCyclic(ObjHeader* root,
-                  const KStdVector<ContainerHeader*>& order,
+                  const std_support::vector<ContainerHeader*>& order,
                   ContainerHeaderSet* newlyFrozen) {
-  KStdUnorderedMap<ContainerHeader*, KStdVector<ContainerHeader*>> reversedEdges;
-  KStdDeque<ObjHeader*> queue;
+  std_support::unordered_map<ContainerHeader*, std_support::vector<ContainerHeader*>> reversedEdges;
+  std_support::deque<ObjHeader*> queue;
   queue.push_back(root);
   while (!queue.empty()) {
     ObjHeader* current = queue.front();
     queue.pop_front();
     ContainerHeader* currentContainer = containerFor(current);
     currentContainer->unMark();
-    reversedEdges.emplace(currentContainer, KStdVector<ContainerHeader*>(0));
+    reversedEdges.emplace(currentContainer, std_support::vector<ContainerHeader*>(0));
     traverseContainerReferredObjects(currentContainer, [current, currentContainer, &queue, &reversedEdges](ObjHeader* obj) {
           ContainerHeader* objContainer = containerFor(obj);
           if (canFreeze(objContainer)) {
@@ -2828,19 +2834,19 @@ void freezeCyclic(ObjHeader* root,
               queue.push_back(obj);
             // We ignore references from FreezableAtomicsReference during condensation, to avoid KT-33824.
             if (!isFreezableAtomic(current))
-              reversedEdges.emplace(objContainer, KStdVector<ContainerHeader*>(0)).
+              reversedEdges.emplace(objContainer, std_support::vector<ContainerHeader*>(0)).
                 first->second.push_back(currentContainer);
           }
       });
    }
 
-   KStdVector<KStdVector<ContainerHeader*>> components;
+   std_support::vector<std_support::vector<ContainerHeader*>> components;
    MEMORY_LOG("Condensation:\n");
    // Enumerate in the topological order.
    for (auto it = order.rbegin(); it != order.rend(); ++it) {
      auto* container = *it;
      if (container->marked()) continue;
-     KStdVector<ContainerHeader*> component;
+     std_support::vector<ContainerHeader*> component;
      traverseStronglyConnectedComponent(container, &reversedEdges, &component);
      MEMORY_LOG("SCC:\n");
   #if TRACE_MEMORY
@@ -2895,8 +2901,8 @@ void freezeCyclic(ObjHeader* root,
 }
 
 void runFreezeHooksRecursive(ObjHeader* root) {
-  KStdUnorderedSet<KRef> seen;
-  KStdVector<KRef> toVisit;
+  std_support::unordered_set<KRef> seen;
+  std_support::vector<KRef> toVisit;
   seen.insert(root);
   toVisit.push_back(root);
   while (!toVisit.empty()) {
@@ -2963,7 +2969,7 @@ void freezeSubgraph(ObjHeader* root) {
   bool hasCycles = false;
   KRef firstBlocker = root->has_meta_object() && ((root->meta_object()->flags_ & MF_NEVER_FROZEN) != 0) ?
     root : nullptr;
-  KStdVector<ContainerHeader*> order;
+  std_support::vector<ContainerHeader*> order;
   depthFirstTraversal(rootContainer, &hasCycles, &firstBlocker, &order);
   if (firstBlocker != nullptr) {
     MEMORY_LOG("See freeze blocker for %p: %p\n", root, firstBlocker)
@@ -3043,7 +3049,7 @@ CycleDetectorRootset CycleDetector::collectRootset() {
   return rootset;
 }
 
-KStdVector<KRef> findCycleWithDFS(KRef root, const CycleDetectorRootset& rootset) {
+std_support::vector<KRef> findCycleWithDFS(KRef root, const CycleDetectorRootset& rootset) {
   auto traverseFields = [&rootset](KRef obj, auto process) {
     auto it = rootset.rootToFields.find(obj);
     // If obj is in the rootset, use it's pinned state.
@@ -3060,8 +3066,8 @@ KStdVector<KRef> findCycleWithDFS(KRef root, const CycleDetectorRootset& rootset
     kotlin::traverseReferredObjects(obj, process);
   };
 
-  KStdVector<KStdVector<KRef>> toVisit;
-  auto appendFieldsToVisit = [&toVisit, &traverseFields](KRef obj, const KStdVector<KRef>& currentPath) {
+  std_support::vector<std_support::vector<KRef>> toVisit;
+  auto appendFieldsToVisit = [&toVisit, &traverseFields](KRef obj, const std_support::vector<KRef>& currentPath) {
     traverseFields(obj, [&toVisit, &currentPath](KRef field) {
       auto path = currentPath;
       path.push_back(field);
@@ -3071,10 +3077,10 @@ KStdVector<KRef> findCycleWithDFS(KRef root, const CycleDetectorRootset& rootset
 
   appendFieldsToVisit(root, KRefList(1, root));
 
-  KStdUnorderedSet<KRef> seen;
+  std_support::unordered_set<KRef> seen;
   seen.insert(root);
   while (!toVisit.empty()) {
-    KStdVector<KRef> currentPath = std::move(toVisit.back());
+    std_support::vector<KRef> currentPath = std::move(toVisit.back());
     toVisit.pop_back();
     KRef node = currentPath[currentPath.size() - 1];
 
@@ -3107,7 +3113,7 @@ OBJ_GETTER(createAndFillArray, const C& container) {
 OBJ_GETTER0(detectCyclicReferences) {
   auto rootset = CycleDetector::collectRootset();
 
-  KStdVector<KRef> cyclic;
+  std_support::vector<KRef> cyclic;
 
   for (KRef root: rootset.roots) {
     if (!findCycleWithDFS(root, rootset).empty()) {

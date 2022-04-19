@@ -19,24 +19,9 @@
 
 #include <stdlib.h>
 
-#if (KONAN_WASM || KONAN_ZEPHYR) && !defined(assert)
-// assert() is needed by STLport.
-#define assert(cond) if (!(cond)) abort()
-#endif
-
-#include "Alloc.h"
 #include "Common.h"
 #include "Memory.h"
 #include "TypeInfo.h"
-#include "cpp_support/Deque.hpp"
-#include "cpp_support/List.hpp"
-#include "cpp_support/Map.hpp"
-#include "cpp_support/Memory.hpp"
-#include "cpp_support/Set.hpp"
-#include "cpp_support/String.hpp"
-#include "cpp_support/UnorderedMap.hpp"
-#include "cpp_support/UnorderedSet.hpp"
-#include "cpp_support/Vector.hpp"
 
 // Note that almost all types are signed.
 typedef bool KBoolean;
@@ -59,26 +44,6 @@ typedef const void* KConstNativePtr;
 typedef ObjHeader* KRef;
 typedef const ObjHeader* KConstRef;
 typedef const ArrayHeader* KString;
-
-// TODO: Remove these typedefs. Use cpp_support directly everywhere.
-using KStdString = kotlin::std_support::string;
-template <typename Value>
-using KStdDeque = kotlin::std_support::deque<Value>;
-template <typename Key, typename Value>
-using KStdUnorderedMap = kotlin::std_support::unordered_map<Key, Value>;
-template <typename Value>
-using KStdUnorderedSet = kotlin::std_support::unordered_set<Value>;
-template <typename Value, typename Compare = std::less<Value>>
-using KStdOrderedMultiset = kotlin::std_support::multiset<Value, Compare>;
-template <typename Key, typename Value>
-using KStdOrderedMap = kotlin::std_support::map<Key, Value>;
-template <typename Value>
-using KStdVector = kotlin::std_support::vector<Value>;
-template <typename Value>
-using KStdList = kotlin::std_support::list<Value>;
-template <typename Value>
-using KStdUniquePtr = kotlin::std_support::unique_ptr<Value>;
-using kotlin::std_support::make_unique;
 
 #ifdef __cplusplus
 extern "C" {

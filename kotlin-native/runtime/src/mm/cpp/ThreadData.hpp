@@ -20,6 +20,7 @@
 #include "Types.h"
 #include "Utils.hpp"
 #include "ThreadSuspension.hpp"
+#include "cpp_support/Vector.hpp"
 
 struct ObjHeader;
 
@@ -56,7 +57,7 @@ public:
 
     ShadowStack& shadowStack() noexcept { return shadowStack_; }
 
-    KStdVector<std::pair<ObjHeader**, ObjHeader*>>& initializingSingletons() noexcept { return initializingSingletons_; }
+    std_support::vector<std::pair<ObjHeader**, ObjHeader*>>& initializingSingletons() noexcept { return initializingSingletons_; }
 
     gc::GC::ThreadData& gc() noexcept { return gc_; }
 
@@ -85,7 +86,7 @@ private:
     ExtraObjectDataFactory::ThreadQueue extraObjectDataThreadQueue_;
     ShadowStack shadowStack_;
     gc::GC::ThreadData gc_;
-    KStdVector<std::pair<ObjHeader**, ObjHeader*>> initializingSingletons_;
+    std_support::vector<std::pair<ObjHeader**, ObjHeader*>> initializingSingletons_;
     ThreadSuspensionData suspensionData_;
 };
 

@@ -21,7 +21,7 @@ ALWAYS_INLINE void SafePointRegular(gc::GC::ThreadData& threadData, size_t weigh
 
 } // namespace
 
-gc::GC::ThreadData::ThreadData(GC& gc, mm::ThreadData& threadData) noexcept : impl_(make_unique<Impl>(gc, threadData)) {}
+gc::GC::ThreadData::ThreadData(GC& gc, mm::ThreadData& threadData) noexcept : impl_(std_support::make_unique<Impl>(gc, threadData)) {}
 
 gc::GC::ThreadData::~ThreadData() = default;
 
@@ -61,7 +61,7 @@ void gc::GC::ThreadData::OnStoppedForGC() noexcept {
     impl_->gcScheduler().OnStoppedForGC();
 }
 
-gc::GC::GC() noexcept : impl_(make_unique<Impl>()) {}
+gc::GC::GC() noexcept : impl_(std_support::make_unique<Impl>()) {}
 
 gc::GC::~GC() = default;
 

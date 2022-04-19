@@ -105,7 +105,7 @@ private:
     uint64_t lastGCTimestampUs_ = 0;
     GCStateHolder state_;
     ScopedThread gcThread_;
-    KStdUniquePtr<FinalizerProcessor> finalizerProcessor_;
+    std_support::unique_ptr<FinalizerProcessor> finalizerProcessor_;
 
     MarkQueue markQueue_;
 };

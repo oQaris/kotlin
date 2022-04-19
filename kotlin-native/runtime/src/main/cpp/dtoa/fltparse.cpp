@@ -25,6 +25,7 @@
 #include "../Natives.h"
 #include "../Porting.h"
 #include "../utf8.h"
+#include "cpp_support/String.hpp"
 
 #if defined(LINUX) || defined(FREEBSD) || defined(MACOSX) || defined(ZOS) || defined(AIX)
 #define USE_LL
@@ -542,7 +543,7 @@ extern "C" KFloat
 Kotlin_native_FloatingPointParser_parseFloatImpl(KString s, KInt e)
 {
   const KChar* utf16 = CharArrayAddressOfElementAt(s, 0);
-  KStdString utf8;
+  kotlin::std_support::string utf8;
   utf8.reserve(s->count_);
   TRY_CATCH(utf8::utf16to8(utf16, utf16 + s->count_, back_inserter(utf8)),
             utf8::unchecked::utf16to8(utf16, utf16 + s->count_, back_inserter(utf8)),

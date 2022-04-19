@@ -13,7 +13,6 @@
 #include <type_traits>
 
 #include "Mutex.hpp"
-#include "Types.h"
 #include "Utils.hpp"
 #include "cpp_support/Memory.hpp"
 

@@ -24,7 +24,11 @@
 #include "Natives.h"
 #include "Porting.h"
 #include "Types.h"
+#include "cpp_support/Deque.hpp"
 #include "cpp_support/Memory.hpp"
+#include "cpp_support/UnorderedMap.hpp"
+#include "cpp_support/UnorderedSet.hpp"
+#include "cpp_support/Vector.hpp"
 
 #if WITH_WORKERS
 #include <pthread.h>
@@ -41,6 +45,8 @@
 #else
 #define COLLECTOR_LOG(...)
 #endif
+
+using namespace kotlin;
 
 /**
  * Theory of operations:
@@ -124,8 +130,8 @@ class CyclicCollector {
   int32_t lastTick_;
   int64_t lastTimestampUs_;
   void* mainWorker_;
-  KStdUnorderedSet<ObjHeader*> rootset_;
-  KStdUnorderedSet<ObjHeader*> toRelease_;
+  std_support::unordered_set<ObjHeader*> rootset_;
+  std_support::unordered_set<ObjHeader*> toRelease_;
 
  public:
   CyclicCollector() {
@@ -168,9 +174,9 @@ class CyclicCollector {
   void gcProcessor() {
      {
        Locker locker(&lock_);
-       KStdDeque<ObjHeader*> toVisit;
-       KStdUnorderedSet<ObjHeader*> visited;
-       KStdUnorderedMap<ObjHeader*, int> sideRefCounts;
+       std_support::deque<ObjHeader*> toVisit;
+       std_support::unordered_set<ObjHeader*> visited;
+       std_support::unordered_map<ObjHeader*, int> sideRefCounts;
        int restartCount = 0;
        while (!terminateCollector_) {
          CHECK_CALL(pthread_cond_wait(&cond_, &lock_), "Cannot wait collector condition");
@@ -382,7 +388,7 @@ class CyclicCollector {
     // We are not doing that on the UI thread, as taking lock is slow, unless
     // it happens on deinit of the collector or if there are no other workers.
     if ((atomicGet(&pendingRelease_) != 0) && ((worker != mainWorker_) || (currentAliveWorkers_ == 1))) {
-      KStdVector<ObjHeader*> heapRefsToRelease;
+      std_support::vector<ObjHeader*> heapRefsToRelease;
 
       {
         suggestLockRelease();

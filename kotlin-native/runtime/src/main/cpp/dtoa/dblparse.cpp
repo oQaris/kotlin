@@ -28,6 +28,7 @@
 #include "../KotlinMath.h"
 #include "../ReturnSlot.h"
 #include "../DoubleConversions.h"
+#include "cpp_support/String.hpp"
 
 #if defined(LINUX) || defined(FREEBSD) || defined(ZOS) || defined(MACOSX) || defined(AIX)
 #define USE_LL
@@ -654,7 +655,7 @@ OutOfMemory:
 KDouble Kotlin_native_FloatingPointParser_parseDoubleImpl (KString s, KInt e)
 {
   const KChar* utf16 = CharArrayAddressOfElementAt(s, 0);
-  KStdString utf8;
+  kotlin::std_support::string utf8;
   utf8.reserve(s->count_);
   TRY_CATCH(utf8::utf16to8(utf16, utf16 + s->count_, back_inserter(utf8)),
             utf8::unchecked::utf16to8(utf16, utf16 + s->count_, back_inserter(utf8)),

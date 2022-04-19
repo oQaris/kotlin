@@ -159,7 +159,7 @@ public:
 
 private:
     GCSchedulerConfig config_;
-    KStdUniquePtr<GCSchedulerData> gcData_;
+    std_support::unique_ptr<GCSchedulerData> gcData_;
     std::function<void()> scheduleGC_;
 };
 

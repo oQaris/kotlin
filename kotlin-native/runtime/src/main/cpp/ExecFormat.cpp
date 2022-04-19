@@ -16,7 +16,6 @@
 
 
 #include "ExecFormat.h"
-#include "Types.h"
 
 #if USE_ELF_SYMBOLS
 
@@ -31,8 +30,10 @@
 
 #include <vector>
 
+#include "Alloc.h"
 #include "KAssert.h"
 #include "cpp_support/Memory.hpp"
+#include "cpp_support/Vector.hpp"
 
 using namespace kotlin;
 
@@ -60,7 +61,7 @@ struct SymRecord {
   char* strtab;
 };
 
-typedef KStdVector<SymRecord> SymRecordList;
+typedef std_support::vector<SymRecord> SymRecordList;
 
 SymRecordList* symbols = nullptr;
 
@@ -153,6 +154,7 @@ extern "C" bool AddressToSymbol(const void* address, char* resultBuffer, size_t 
 #include <stdlib.h>
 #include <string.h>
 
+#include "Alloc.h"
 #include "KAssert.h"
 #include "cpp_support/Memory.hpp"
 
@@ -335,6 +337,7 @@ extern "C" bool AddressToSymbol(const void* address, char* resultBuffer, size_t 
 
 #elif __has_include("dlfcn.h")
 
+#include <cstring>
 #include <dlfcn.h>
 
 #include "Porting.h"

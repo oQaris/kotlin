@@ -46,7 +46,7 @@ public:
         void OnStoppedForGC() noexcept;
 
     private:
-        KStdUniquePtr<Impl> impl_;
+        std_support::unique_ptr<Impl> impl_;
     };
 
     GC() noexcept;
@@ -65,7 +65,7 @@ public:
     bool FinalizersThreadIsRunning() noexcept;
 
 private:
-    KStdUniquePtr<Impl> impl_;
+    std_support::unique_ptr<Impl> impl_;
 };
 
 inline constexpr bool kSupportsMultipleMutators = true;

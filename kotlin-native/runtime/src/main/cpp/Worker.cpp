@@ -34,7 +34,11 @@
 #include "Runtime.h"
 #include "Types.h"
 #include "Worker.h"
+#include "cpp_support/Deque.hpp"
 #include "cpp_support/Memory.hpp"
+#include "cpp_support/Set.hpp"
+#include "cpp_support/UnorderedMap.hpp"
+#include "cpp_support/Vector.hpp"
 
 using namespace kotlin;
 
@@ -133,7 +137,7 @@ struct JobCompare {
 // Using multiset instead of regular set, because we compare the jobs only by `whenExecute`.
 // So if `whenExecute` of two different jobs is the same, the jobs are considered equivalent,
 // and set would simply drop one of them.
-typedef KStdOrderedMultiset<Job, JobCompare> DelayedJobSet;
+typedef std_support::multiset<Job, JobCompare> DelayedJobSet;
 
 }  // namespace
 
@@ -200,7 +204,7 @@ class Worker {
 
   KInt id_;
   WorkerKind kind_;
-  KStdDeque<Job> queue_;
+  std_support::deque<Job> queue_;
   DelayedJobSet delayed_;
   // Stable pointer with worker's name.
   KNativePtr name_;
@@ -581,7 +585,7 @@ class State {
 
   template <typename F>
   void waitNativeWorkersTerminationUnlocked(bool checkLeaks, F waitForWorker) {
-      KStdVector<std::pair<KInt, pthread_t>> workersToWait;
+      std_support::vector<std::pair<KInt, pthread_t>> workersToWait;
       {
           Locker locker(&lock_);
 
@@ -628,9 +632,9 @@ class State {
  private:
   pthread_mutex_t lock_;
   pthread_cond_t cond_;
-  KStdUnorderedMap<KInt, Future*> futures_;
-  KStdUnorderedMap<KInt, Worker*> workers_;
-  KStdUnorderedMap<KInt, pthread_t> terminating_native_workers_;
+  std_support::unordered_map<KInt, Future*> futures_;
+  std_support::unordered_map<KInt, Worker*> workers_;
+  std_support::unordered_map<KInt, pthread_t> terminating_native_workers_;
   KInt currentWorkerId_;
   KInt currentFutureId_;
   KInt currentVersion_;
