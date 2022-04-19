@@ -5737,9 +5737,9 @@ public class IrBoxJsTestGenerated extends AbstractIrBoxJsTest {
         }
 
         @Test
-        @TestMetadata("propertyAccessNoSideEffect.kt")
-        public void testPropertyAccessNoSideEffect() throws Exception {
-            runTest("js/js.translator/testData/box/inlineEvaluationOrder/propertyAccessNoSideEffect.kt");
+        @TestMetadata("propertyAccessExternalWithSideEffect.kt")
+        public void testPropertyAccessExternalWithSideEffect() throws Exception {
+            runTest("js/js.translator/testData/box/inlineEvaluationOrder/propertyAccessExternalWithSideEffect.kt");
         }
 
         @Test
