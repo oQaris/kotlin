@@ -5020,6 +5020,10 @@ tasks.register("KT-50983", KonanDriverTest) {
     doBeforeBuild {
         mkdir(buildDir)
         exec {
+            commandLine UtilsKt.binaryFromToolchain(project, "gcc")
+            args "-E", "-xc", "-DRC_INVOKED", "$projectDir\\windows\\KT-50983\\File.rc"
+        }
+        exec {
             commandLine UtilsKt.binaryFromToolchain(project, "windres.exe")
             args "$projectDir\\windows\\KT-50983\\File.rc", "-O", "coff", "-o", "$buildDir\\File.res", "-v", "--use-temp-file"
         }
