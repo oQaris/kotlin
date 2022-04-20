@@ -783,9 +783,9 @@ public:
     MOCK_METHOD(void*, Alloc, (size_t, size_t));
     MOCK_METHOD(void, Free, (void*));
 
-    void* DefaultAlloc(size_t size, size_t alignment) { return konan::calloc_aligned(1, size, alignment); }
+    void* DefaultAlloc(size_t size, size_t alignment) { return allocateInObjectSpace(1, size, alignment); }
 
-    void DefaultFree(void* instance) { konan::free(instance); }
+    void DefaultFree(void* instance) { deallocateInObjectSpace(instance); }
 };
 
 class GlobalMockAllocator {

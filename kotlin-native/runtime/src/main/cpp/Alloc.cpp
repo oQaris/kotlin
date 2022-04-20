@@ -5,6 +5,7 @@
 
 #include "Alloc.h"
 
+#include <cstdlib>
 #include <cstdint>
 #include <unistd.h>
 
@@ -14,14 +15,16 @@ extern "C" void dlfree(void*);
 #define calloc_impl dlcalloc
 #define free_impl dlfree
 #define calloc_aligned_impl(count, size, alignment) dlcalloc(count, size)
-
+#define object_calloc(count, size, alignment) dlcalloc(count, size)
+#define object_free dlfree
 #else
-extern "C" void* konan_calloc_impl(size_t, size_t);
-extern "C" void konan_free_impl(void*);
-extern "C" void* konan_calloc_aligned_impl(size_t count, size_t size, size_t alignment);
-#define calloc_impl konan_calloc_impl
-#define free_impl konan_free_impl
-#define calloc_aligned_impl konan_calloc_aligned_impl
+extern "C" void* konan_object_calloc(size_t count, size_t size, size_t alignment);
+extern "C" void konan_object_free(void*);
+#define calloc_impl ::calloc
+#define free_impl ::free
+#define calloc_aligned_impl(count, size, alignment) ::calloc(count, size)
+#define object_calloc konan_object_calloc
+#define object_free konan_object_free
 #endif
 
 namespace konan {
@@ -105,3 +108,11 @@ long getpagesize() {
 #endif
 
 } // namespace konan
+
+void* kotlin::allocateInObjectSpace(size_t count, size_t size, size_t alignment) noexcept {
+    return object_calloc(count, size, alignment);
+}
+
+void kotlin::deallocateInObjectSpace(void* ptr) noexcept {
+    return object_free(ptr);
+}

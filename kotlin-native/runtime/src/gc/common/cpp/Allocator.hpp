@@ -10,10 +10,14 @@
 namespace kotlin {
 namespace gc {
 
+// TODO: Try to move from custom allocator interface to standard one.
+//       Currently Free method is in the way: it is static to avoid keeping allocator state in
+//       unique_ptr's deleter in ObjectFactory.
+
 class AlignedAllocator {
 public:
-    void* Alloc(size_t size, size_t alignment) noexcept { return konan::calloc_aligned(1, size, alignment); }
-    static void Free(void* instance) noexcept { konan::free(instance); }
+    void* Alloc(size_t size, size_t alignment) noexcept { return allocateInObjectSpace(1, size, alignment); }
+    static void Free(void* instance) noexcept { deallocateInObjectSpace(instance); }
 };
 
 template <typename BaseAllocator, typename GCThreadData>
