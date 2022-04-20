@@ -75,7 +75,7 @@ private fun needToGenerateDelegationToDefaultImpls(descriptor: FunctionDescripto
     if (findInterfaceImplementation(descriptor) == null) return false
     val overriddenFromInterface = findImplementationFromInterface(descriptor) ?: return false
 
-    return !overriddenFromInterface.isJvmDefaultOrPlatformDependent(jvmDefaultMode)
+    return !(descriptor.isDefinitelyNotDefaultImplsMethod() || overriddenFromInterface.isJvmDefaultOrPlatformDependent(jvmDefaultMode))
 }
 
 /**
