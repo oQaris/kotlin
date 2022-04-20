@@ -50,7 +50,7 @@ object BuiltinSpecialBridgesUtil {
         state: GenerationState
     ): Set<BridgeForBuiltinSpecial<Signature>> {
 
-        val functionHandle = DescriptorBasedFunctionHandleForJvm(function, state)
+        val functionHandle = DescriptorBasedFunctionHandleForJvm(function, state, true)
         val fake = !functionHandle.isDeclaration
         val overriddenBuiltin = function.getOverriddenBuiltinReflectingJvmDescriptor()!!
 
@@ -78,7 +78,7 @@ object BuiltinSpecialBridgesUtil {
 
         if (fake) {
             for (overridden in function.overriddenDescriptors.map { it.original }) {
-                if (!DescriptorBasedFunctionHandleForJvm(overridden, state).isAbstract) {
+                if (!DescriptorBasedFunctionHandleForJvm(overridden, state, true).isAbstract) {
                     commonBridges.removeAll(
                         findAllReachableDeclarations(
                             overridden,
