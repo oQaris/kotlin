@@ -36,4 +36,74 @@ public class MultiModuleOrderTestGenerated extends AbstractMultiModuleOrderTest 
     public void testUmd() throws Exception {
         runTest("js/js.translator/testData/multiModuleOrder/umd.kt");
     }
+
+    @Nested
+    @TestMetadata("js/js.translator/testData/multiModuleOrder/out")
+    @TestDataPath("$PROJECT_ROOT")
+    public class Out {
+        @Test
+        public void testAllFilesPresentInOut() throws Exception {
+            KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("js/js.translator/testData/multiModuleOrder/out"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.JS, true);
+        }
+
+        @Nested
+        @TestMetadata("js/js.translator/testData/multiModuleOrder/out/lib")
+        @TestDataPath("$PROJECT_ROOT")
+        public class Lib {
+            @Test
+            public void testAllFilesPresentInLib() throws Exception {
+                KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("js/js.translator/testData/multiModuleOrder/out/lib"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.JS, true);
+            }
+
+            @Nested
+            @TestMetadata("js/js.translator/testData/multiModuleOrder/out/lib/kotlin")
+            @TestDataPath("$PROJECT_ROOT")
+            public class Kotlin {
+                @Test
+                public void testAllFilesPresentInKotlin() throws Exception {
+                    KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("js/js.translator/testData/multiModuleOrder/out/lib/kotlin"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.JS, true);
+                }
+            }
+
+            @Nested
+            @TestMetadata("js/js.translator/testData/multiModuleOrder/out/lib/lib")
+            @TestDataPath("$PROJECT_ROOT")
+            public class Lib {
+                @Test
+                public void testAllFilesPresentInLib() throws Exception {
+                    KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("js/js.translator/testData/multiModuleOrder/out/lib/lib"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.JS, true);
+                }
+            }
+        }
+
+        @Nested
+        @TestMetadata("js/js.translator/testData/multiModuleOrder/out/main")
+        @TestDataPath("$PROJECT_ROOT")
+        public class Main {
+            @Test
+            public void testAllFilesPresentInMain() throws Exception {
+                KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("js/js.translator/testData/multiModuleOrder/out/main"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.JS, true);
+            }
+
+            @Nested
+            @TestMetadata("js/js.translator/testData/multiModuleOrder/out/main/foo")
+            @TestDataPath("$PROJECT_ROOT")
+            public class Foo {
+                @Test
+                public void testAllFilesPresentInFoo() throws Exception {
+                    KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("js/js.translator/testData/multiModuleOrder/out/main/foo"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.JS, true);
+                }
+            }
+
+            @Nested
+            @TestMetadata("js/js.translator/testData/multiModuleOrder/out/main/kotlin")
+            @TestDataPath("$PROJECT_ROOT")
+            public class Kotlin {
+                @Test
+                public void testAllFilesPresentInKotlin() throws Exception {
+                    KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("js/js.translator/testData/multiModuleOrder/out/main/kotlin"), Pattern.compile("^(.+)\\.kt$"), null, TargetBackend.JS, true);
+                }
+            }
+        }
+    }
 }
