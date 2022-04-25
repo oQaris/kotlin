@@ -48,6 +48,7 @@ import org.jetbrains.kotlin.fir.DependencyListForCliModule
 import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.backend.jvm.FirJvmBackendClassResolver
 import org.jetbrains.kotlin.fir.backend.jvm.FirJvmBackendExtension
+import org.jetbrains.kotlin.fir.backend.jvm.JvmFir2IrExtensions
 import org.jetbrains.kotlin.fir.checkers.registerExtendedCommonCheckers
 import org.jetbrains.kotlin.fir.extensions.FirExtensionRegistrar
 import org.jetbrains.kotlin.fir.java.FirProjectSessionProvider
@@ -190,9 +191,10 @@ fun convertAnalyzedFirToIr(
     // fir2ir
     val irGenerationExtensions =
         (environment.projectEnvironment as? VfsBasedProjectEnvironment)?.project?.let { IrGenerationExtension.getInstances(it) }
-    val (irModuleFragment, symbolTable, components) =
+    val (irModuleFragment, components) =
         analysisResults.session.convertToIr(
-            analysisResults.scopeSession, analysisResults.fir, extensions, irGenerationExtensions ?: emptyList()
+            analysisResults.scopeSession, analysisResults.fir, JvmFir2IrExtensions(input.configuration),
+            irGenerationExtensions ?: emptyList(),
         )
 
     return ModuleCompilerIrBackendInput(
@@ -200,7 +202,7 @@ fun convertAnalyzedFirToIr(
         input.configuration,
         extensions,
         irModuleFragment,
-        symbolTable,
+        components.symbolTable,
         components,
         analysisResults.session
     )
@@ -242,7 +244,7 @@ fun generateCodeFromIr(
 
     generationState.beforeCompile()
     codegenFactory.generateModuleInFrontendIRMode(
-        generationState, input.irModuleFragment, input.symbolTable, input.extensions,
+        generationState, input.irModuleFragment, input.symbolTable, input.components.irProviders, input.extensions,
         FirJvmBackendExtension(input.firSession, input.components)
     ) {
         performanceManager?.notifyIRLoweringFinished()
