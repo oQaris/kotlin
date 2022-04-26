@@ -505,7 +505,7 @@ class ExportModelGenerator(
             classifier is IrClassSymbol -> {
                 val klass = classifier.owner
                 val isImplicitlyExported = !klass.isExported(context) && !klass.isExternal
-                val name = klass.getExportableName()
+                val name = klass.getFqNameWithJsNameWhenAvailable(generateNamespacesForPackages).asString()
 
                 when (klass.kind) {
                     ClassKind.ANNOTATION_CLASS,
@@ -529,19 +529,6 @@ class ExportModelGenerator(
         }
 
         return exportedType.withNullability(isMarkedNullable)
-    }
-
-    private fun IrClass.getExportableName(): String {
-        val qualifier = (parent as? IrFile)?.getJsQualifier()
-        val supQualifier = (parent as? IrClass)?.getExportableName()
-        val name = getJsNameOrKotlinName()
-
-        return when {
-            qualifier != null -> "$qualifier.$name"
-            isExternal && !isExported(context) -> "${supQualifier?.plus(".") ?: ""}$name"
-            generateNamespacesForPackages -> fqNameWhenAvailable!!.asString()
-            else -> name.asString()
-        }
     }
 
     private fun IrDeclarationWithName.getExportedIdentifier(): String =
