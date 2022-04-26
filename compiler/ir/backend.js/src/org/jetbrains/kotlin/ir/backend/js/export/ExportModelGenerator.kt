@@ -504,8 +504,10 @@ class ExportModelGenerator(
 
             classifier is IrClassSymbol -> {
                 val klass = classifier.owner
-                val isImplicitlyExported = !klass.isExported(context) && !klass.isExternal
-                val name = klass.getFqNameWithJsNameWhenAvailable(generateNamespacesForPackages).asString()
+                val isExported = klass.isExported(context)
+                val isImplicitlyExported = !isExported && !klass.isExternal
+                val isNonExportedExternal = klass.isExternal && !isExported
+                val name = klass.getFqNameWithJsNameWhenAvailable(!isNonExportedExternal && generateNamespacesForPackages).asString()
 
                 when (klass.kind) {
                     ClassKind.ANNOTATION_CLASS,
