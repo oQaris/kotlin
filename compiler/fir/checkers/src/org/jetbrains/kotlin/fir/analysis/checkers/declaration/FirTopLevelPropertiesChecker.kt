@@ -163,7 +163,7 @@ internal fun checkPropertyInitializer(
                 }
                 // TODO: like [BindingContext.MUST_BE_LATEINIT], we should consider variable with uninitialized error.
                 if (backingFieldRequired && !inInterface && isInitialized) {
-                    reporter.reportOn(propertySource, FirErrors.UNNECESSARY_LATEINIT, context)
+                    //reporter.reportOn(propertySource, FirErrors.UNNECESSARY_LATEINIT, context)
                 }
             }
         }

@@ -21,26 +21,26 @@ import libModule.*
 
 // TESTCASE NUMBER: 1
 fun case1() {
-    val res = JavaClass.FALSE<!UNNECESSARY_NOT_NULL_ASSERTION!>!!<!>
+    val res = JavaClass.FALSE!!
 }
 
 // TESTCASE NUMBER: 2
 fun case2() {
-    val x = JavaClass.obj<!UNNECESSARY_NOT_NULL_ASSERTION!>!!<!>
+    val x = JavaClass.obj!!
 }
 
 // TESTCASE NUMBER: 3
 fun case3() {
     val a = false
-    val x = a<!UNNECESSARY_NOT_NULL_ASSERTION!>!!<!>
+    val x = a!!
 }
 
 // TESTCASE NUMBER: 4
 fun case4() {
-    val x = "weds"<!UNNECESSARY_NOT_NULL_ASSERTION!>!!<!>
+    val x = "weds"!!
 }
 
 // TESTCASE NUMBER: 5
 fun case5(nothing: Nothing) {
-    val y = nothing<!UNNECESSARY_NOT_NULL_ASSERTION!>!!<!>
+    val y = nothing!!
 }

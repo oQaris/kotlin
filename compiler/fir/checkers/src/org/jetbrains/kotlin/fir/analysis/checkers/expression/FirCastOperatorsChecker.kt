@@ -34,9 +34,9 @@ object FirCastOperatorsChecker : FirTypeOperatorCallChecker() {
         if (expression.operation == FirOperation.AS || isSafeAs) {
             val castType = checkCasting(actualType, targetType, isSafeAs, context)
             if (castType == CastingType.Impossible) {
-                reporter.reportOn(expression.source, FirErrors.CAST_NEVER_SUCCEEDS, context)
+                //reporter.reportOn(expression.source, FirErrors.CAST_NEVER_SUCCEEDS, context)
             } else if (castType == CastingType.Always) {
-                reporter.reportOn(expression.source, FirErrors.USELESS_CAST, context)
+                //reporter.reportOn(expression.source, FirErrors.USELESS_CAST, context)
             } else if (isCastErased(actualType, targetType, context)) {
                 reporter.reportOn(expression.source, FirErrors.UNCHECKED_CAST, actualType, targetType, context)
             }

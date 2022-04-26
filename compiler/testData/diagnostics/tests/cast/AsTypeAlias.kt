@@ -1,4 +1,3 @@
-// FIR_IDENTICAL
 typealias MyString = String
 
 val x: MyString = ""

@@ -1,4 +1,3 @@
-// FIR_IDENTICAL
 // !DIAGNOSTICS: -UNUSED_EXPRESSION
 
 fun use(a: Any?) = a

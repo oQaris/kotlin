@@ -25,38 +25,38 @@ fun <R1 : R2, R2> build4(x: R2, @BuilderInference block: TestInterface<R1>.() ->
 fun test(a: String?) {
     val ret1 = build {
         emit(1)
-        get()<!UNNECESSARY_SAFE_CALL!>?.<!>equals("")
+        get()?.equals("")
         val x = get()
-        x<!UNNECESSARY_SAFE_CALL!>?.<!>equals("")
-        x <!USELESS_ELVIS!>?: 1<!>
-        x<!UNNECESSARY_NOT_NULL_ASSERTION!>!!<!>
+        x?.equals("")
+        x ?: 1
+        x!!
         ""
     }
     val ret2 = build2 {
         emit(1)
-        get()<!UNNECESSARY_SAFE_CALL!>?.<!>equals("")
+        get()?.equals("")
         val x = get()
-        x<!UNNECESSARY_SAFE_CALL!>?.<!>equals("")
-        x <!USELESS_ELVIS!>?: 1<!>
-        x<!UNNECESSARY_NOT_NULL_ASSERTION!>!!<!>
+        x?.equals("")
+        x ?: 1
+        x!!
         ""
     }
     val ret3 = build3 {
         emit(1)
-        get()<!UNNECESSARY_SAFE_CALL!>?.<!>equals("")
+        get()?.equals("")
         val x = get()
-        x<!UNNECESSARY_SAFE_CALL!>?.<!>equals("")
-        x <!USELESS_ELVIS!>?: 1<!>
-        x<!UNNECESSARY_NOT_NULL_ASSERTION!>!!<!>
+        x?.equals("")
+        x ?: 1
+        x!!
         ""
     }
     val ret4 = build4(1) {
         emit(1)
-        get()<!UNNECESSARY_SAFE_CALL!>?.<!>equals("")
+        get()?.equals("")
         val x = get()
-        x<!UNNECESSARY_SAFE_CALL!>?.<!>equals("")
-        x <!USELESS_ELVIS!>?: 1<!>
-        x<!UNNECESSARY_NOT_NULL_ASSERTION!>!!<!>
+        x?.equals("")
+        x ?: 1
+        x!!
         ""
     }
 }

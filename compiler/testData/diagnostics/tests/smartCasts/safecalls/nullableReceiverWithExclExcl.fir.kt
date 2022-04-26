@@ -5,7 +5,7 @@ fun test(foo: Foo?) {
         // Correct
         foo.bar?.length
         // Unnecessary
-        foo<!UNNECESSARY_SAFE_CALL!>?.<!>bar?.length
+        foo?.bar?.length
     }
-    foo.bar<!UNNECESSARY_SAFE_CALL!>?.<!>length
+    foo.bar?.length
 }

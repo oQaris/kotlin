@@ -1,4 +1,3 @@
-// FIR_IDENTICAL
 // WITH_EXTENDED_CHECKERS
 // KT-716 Type inference failed
 

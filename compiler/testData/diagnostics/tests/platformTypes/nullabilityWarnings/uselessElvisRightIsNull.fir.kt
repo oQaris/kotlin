@@ -33,15 +33,15 @@ public interface JJJJ<R> {
 // FILE: k.kt
 
 fun test() {
-    val a = J.staticN <!USELESS_ELVIS_RIGHT_IS_NULL!>?: null<!>
+    val a = J.staticN ?: null
     foo(a)
-    val b = JJ.staticNN <!USELESS_ELVIS_RIGHT_IS_NULL!>?: null<!>
+    val b = JJ.staticNN ?: null
     foo(b)
-    val c = JJJ.staticNNN <!USELESS_ELVIS!>?: null<!>
+    val c = JJJ.staticNNN ?: null
     foo(c)
 }
 
 fun foo(a: Any?) {
 }
 
-fun <R> test2(j: JJJJ<R>) = j.get() <!USELESS_ELVIS_RIGHT_IS_NULL!>?: null<!>
+fun <R> test2(j: JJJJ<R>) = j.get() ?: null

@@ -24,5 +24,5 @@ fun testDataFlowInfoAfterExclExcl(a: Int?) {
 }
 
 fun testUnnecessaryExclExcl(a: Int) {
-    doInt(a<!UNNECESSARY_NOT_NULL_ASSERTION!>!!<!>) //should be warning
+    doInt(a!!) //should be warning
 }

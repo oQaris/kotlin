@@ -55,7 +55,7 @@ fun case_1(value_1: Int?) {
 
 // TESTCASE NUMBER: 2
 fun case_2(value_1: Int?) {
-    if (!contracts.case_2(value_1)<!UNNECESSARY_NOT_NULL_ASSERTION!>!!<!>) {
+    if (!contracts.case_2(value_1)!!) {
         value_1.inv()
     }
 }

@@ -87,7 +87,7 @@ fun main1(a: A1<String>, a1: A1<String?>) {
     a.foo(<!NULL_FOR_NONNULL_TYPE!>null<!>, "")<!UNSAFE_CALL!>.<!>length
 
     a.bar().length
-    a.bar()<!UNNECESSARY_NOT_NULL_ASSERTION!>!!<!>.length
+    a.bar()!!.length
 
     a.field?.length
     a.field<!UNSAFE_CALL!>.<!>length
@@ -125,7 +125,7 @@ fun main3(a: A3<String>, a1: A3<String?>) {
     a.foo(<!NULL_FOR_NONNULL_TYPE!>null<!>, "")<!UNSAFE_CALL!>.<!>length
 
     a.bar().length
-    a.bar()<!UNNECESSARY_NOT_NULL_ASSERTION!>!!<!>.length
+    a.bar()!!.length
 
     a.field?.length
     a.field<!UNSAFE_CALL!>.<!>length

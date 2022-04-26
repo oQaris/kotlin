@@ -37,7 +37,7 @@ object FirNotNullAssertionChecker : FirCheckNotNullCallChecker() {
         val type = argument.typeRef.coneType.fullyExpandedType(context.session)
 
         if (!type.canBeNull) {
-            reporter.reportOn(expression.source, FirErrors.UNNECESSARY_NOT_NULL_ASSERTION, type, context)
+            //reporter.reportOn(expression.source, FirErrors.UNNECESSARY_NOT_NULL_ASSERTION, type, context)
         }
     }
 }

@@ -11,7 +11,7 @@ fun <T : String?> T.foo() {
         if (<!SENSELESS_COMPARISON!>this != null<!>) {}
 
         length
-        this<!UNNECESSARY_SAFE_CALL!>?.<!>length
+        this?.length
 
         bar1()
         bar2()
@@ -19,14 +19,14 @@ fun <T : String?> T.foo() {
         bar4()
 
 
-        this<!UNNECESSARY_SAFE_CALL!>?.<!>bar1()
+        this?.bar1()
     }
 
     <!UNSAFE_CALL!>length<!>
 
     if (this is String) {
         length
-        this<!UNNECESSARY_SAFE_CALL!>?.<!>length
+        this?.length
 
         bar1()
         bar2()

@@ -45,13 +45,13 @@ fun main(a: A) {
     a.foo(null, <!NULL_FOR_NONNULL_TYPE!>null<!>, "").length
 
     a.bar().length
-    a.bar()<!UNNECESSARY_NOT_NULL_ASSERTION!>!!<!>.length
+    a.bar()!!.length
 
     a.field?.length
     a.field.length
     a.field = null
 
-    a.nonNullField<!UNNECESSARY_SAFE_CALL!>?.<!>length
+    a.nonNullField?.length
     a.nonNullField.length
     a.nonNullField = <!NULL_FOR_NONNULL_TYPE!>null<!>
 }

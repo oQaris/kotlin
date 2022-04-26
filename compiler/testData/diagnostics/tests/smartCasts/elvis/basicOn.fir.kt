@@ -27,13 +27,13 @@ fun bar(o: Any) {
 
     }
     else {
-        order<!UNNECESSARY_NOT_NULL_ASSERTION!>!!<!>.doSomething()
+        order!!.doSomething()
     }
     if (order?.notExpired() ?: true) {
 
     }
     else {
-        order<!UNNECESSARY_NOT_NULL_ASSERTION!>!!<!>.doSomething()
+        order!!.doSomething()
     }
 }
 

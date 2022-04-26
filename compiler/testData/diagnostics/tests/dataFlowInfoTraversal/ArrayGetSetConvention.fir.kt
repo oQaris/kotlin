@@ -6,7 +6,7 @@ interface G {
 }
 
 fun foo1(a: Int?, b: G) {
-    b[a!!, a<!UNNECESSARY_NOT_NULL_ASSERTION!>!!<!>] = a
+    b[a!!, a!!] = a
     checkSubtype<Int>(a)
 }
 

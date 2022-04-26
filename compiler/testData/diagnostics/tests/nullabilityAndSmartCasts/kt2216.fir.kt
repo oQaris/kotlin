@@ -10,7 +10,7 @@ fun foo() {
 
     bar(if (x != null) x else return, x)
     x + 2
-    bar(x, x<!UNNECESSARY_NOT_NULL_ASSERTION!>!!<!>)
+    bar(x, x!!)
 
     val y: Int? = 0
     val z: Int? = 0

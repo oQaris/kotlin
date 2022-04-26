@@ -73,7 +73,7 @@ fun evlis() {
     val r2 = b ?: ""
 
     // JB
-    val r3 = c <!USELESS_ELVIS!>?: ""<!>
+    val r3 = c ?: ""
     val r4 = d ?: ""
 
     // Platform

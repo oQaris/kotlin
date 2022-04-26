@@ -1,4 +1,3 @@
-// FIR_IDENTICAL
 // !CHECK_TYPE
 // Incorrect "type mismatch" error for generic extension safe call (required not-null, found nullable)
 

@@ -51,7 +51,7 @@ fun main(a: A, a2: A2) {
     a.foo(null, <!NULL_FOR_NONNULL_TYPE!>null<!>, "").length
 
     a.bar().length
-    a.bar()<!UNNECESSARY_NOT_NULL_ASSERTION!>!!<!>.length
+    a.bar()!!.length
 
     a.field?.length
     a.field<!UNSAFE_CALL!>.<!>length
@@ -61,7 +61,7 @@ fun main(a: A, a2: A2) {
     a2.foo(null, <!NULL_FOR_NONNULL_TYPE!>null<!>, "").length
 
     a2.bar().length
-    a2.bar()<!UNNECESSARY_NOT_NULL_ASSERTION!>!!<!>.length
+    a2.bar()!!.length
 
     a2.field?.length
     a2.field<!UNSAFE_CALL!>.<!>length

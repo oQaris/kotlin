@@ -10,7 +10,7 @@ fun main() {
 
     if (x != null) {
         foo(x)
-        foo(x<!UNNECESSARY_NOT_NULL_ASSERTION!>!!<!>)
+        foo(x!!)
         foo(x)
     }
 
@@ -18,7 +18,7 @@ fun main() {
 
     if (x != null) {
         foo(x)
-        foo(x<!UNNECESSARY_NOT_NULL_ASSERTION!>!!<!>)
+        foo(x!!)
         foo(x)
     } else {
         foo(<!ARGUMENT_TYPE_MISMATCH!>x<!>)
@@ -27,12 +27,12 @@ fun main() {
     }
 
     foo(x)
-    foo(x<!UNNECESSARY_NOT_NULL_ASSERTION!>!!<!>)
+    foo(x!!)
     foo(x)
 
     val y: Int? = null
     y!!
-    y<!UNNECESSARY_NOT_NULL_ASSERTION!>!!<!>
+    y!!
     foo(y)
-    foo(y<!UNNECESSARY_NOT_NULL_ASSERTION!>!!<!>)
+    foo(y!!)
 }

@@ -4,12 +4,12 @@
 
 fun test1(s: String?) {
     assert(s!!.isEmpty())
-    s<!UNNECESSARY_SAFE_CALL!>?.<!>length
+    s?.length
 }
 
 fun test2(s: String?) {
     assert(s!!.isEmpty())
-    s<!UNNECESSARY_NOT_NULL_ASSERTION!>!!<!>.length
+    s!!.length
 }
 
 fun test3(s: String?) {
@@ -20,13 +20,13 @@ fun test3(s: String?) {
 fun test4() {
     val s: String? = null;
     assert(s!!.isEmpty())
-    s<!UNNECESSARY_SAFE_CALL!>?.<!>length
+    s?.length
 }
 
 fun test5() {
     val s: String? = null;
     assert(s!!.isEmpty())
-    s<!UNNECESSARY_NOT_NULL_ASSERTION!>!!<!>.length
+    s!!.length
 }
 
 fun test6() {

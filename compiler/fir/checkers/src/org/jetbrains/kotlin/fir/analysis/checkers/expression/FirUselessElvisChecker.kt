@@ -25,12 +25,12 @@ object FirUselessElvisChecker : FirElvisExpressionChecker() {
         val lhsType = expression.lhs.typeRef.coneType
         if (lhsType is ConeErrorType) return
         if (!lhsType.canBeNull) {
-            reporter.reportOn(expression.source, FirErrors.USELESS_ELVIS, lhsType, context)
+            //reporter.reportOn(expression.source, FirErrors.USELESS_ELVIS, lhsType, context)
             return
         }
 
         if (expression.rhs.isNullLiteral) {
-            reporter.reportOn(expression.source, FirErrors.USELESS_ELVIS_RIGHT_IS_NULL, context)
+            //reporter.reportOn(expression.source, FirErrors.USELESS_ELVIS_RIGHT_IS_NULL, context)
         }
     }
 }
