@@ -4,7 +4,20 @@
  */
 
 import kt51925.*
+import kotlinx.cinterop.*
 
-fun bar() = E.Z.value
+fun bar1(e: E) = e.value
 
-inline fun foo() = bar()
+inline fun foo1() = bar1(E.Z)
+
+fun bar2(s: Struct): Int {
+    return s.d
+}
+
+inline fun foo2(): Int {
+    memScoped {
+        val s = alloc<Struct>()
+        s.d = 42
+        return bar2(s)
+    }
+}

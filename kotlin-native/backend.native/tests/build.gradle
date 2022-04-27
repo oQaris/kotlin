@@ -4689,6 +4689,7 @@ interopTest("interop_kt44283") {
     source = "interop/kt44283/main.kt"
 }
 
+// TODO: This test should be run with caches on.
 interopTest("interop_kt51925") {
     disabled = (project.testTarget == 'wasm32') // No interop for wasm yet.
     interop = 'kt51925'
