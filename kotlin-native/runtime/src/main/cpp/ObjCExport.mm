@@ -45,20 +45,12 @@
 #import "Exceptions.h"
 #include "std_support/CStdlib.hpp"
 #include "std_support/Map.hpp"
+#include "std_support/New.hpp"
 #include "std_support/String.hpp"
 #include "std_support/UnorderedSet.hpp"
 #include "std_support/Vector.hpp"
 
 using namespace kotlin;
-
-namespace {
-
-template <typename T>
-inline T* konanAllocArray(size_t length) {
-    return reinterpret_cast<T*>(std_support::calloc(length, sizeof(T)));
-}
-
-}
 
 struct ObjCToKotlinMethodAdapter {
   const char* selector;
@@ -691,7 +683,7 @@ static void buildITable(TypeInfo* result, const std_support::map<ClassId, std_su
   if (!useFastITable)
     itableSize = interfaceVTables.size();
 
-  auto itable_ = konanAllocArray<InterfaceTableRecord>(itableSize);
+  auto itable_ = new (std_support::kalloc) InterfaceTableRecord[itableSize];
   result->interfaceTable_ = itable_;
   result->interfaceTableSize_ = useFastITable ? itableSize - 1 : -itableSize;
 
@@ -718,7 +710,7 @@ static void buildITable(TypeInfo* result, const std_support::map<ClassId, std_su
     RuntimeAssert(interfaceVTableIt != interfaceVTables.end(), "");
     auto const& interfaceVTable = interfaceVTableIt->second;
     int interfaceVTableSize = interfaceVTable.size();
-    auto interfaceVTable_ = interfaceVTableSize == 0 ? nullptr : konanAllocArray<VTableElement>(interfaceVTableSize);
+    auto interfaceVTable_ = interfaceVTableSize == 0 ? nullptr : new (std_support::kalloc) VTableElement[interfaceVTableSize];
     for (int j = 0; j < interfaceVTableSize; ++j)
       interfaceVTable_[j] = interfaceVTable[j];
     itable_[i].vtable = interfaceVTable_;
@@ -768,7 +760,7 @@ static const TypeInfo* createTypeInfo(
     }
   }
 
-  const TypeInfo** implementedInterfaces_ = konanAllocArray<const TypeInfo*>(implementedInterfaces.size());
+  const TypeInfo** implementedInterfaces_ = new (std_support::kalloc) const TypeInfo*[implementedInterfaces.size()];
   for (size_t i = 0; i < implementedInterfaces.size(); ++i) {
     implementedInterfaces_[i] = implementedInterfaces[i];
   }
