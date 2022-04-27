@@ -1,0 +1,5 @@
+strictEnums = E
+---
+enum E {
+    X = 1, Y = 2, Z = 42
+};
